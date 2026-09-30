@@ -8,6 +8,7 @@ part 'command.g.dart';
 sealed class Command with _$Command {
   const factory Command.reboot({required String cmdId}) = _Reboot;
 
+  @FreezedUnionValue('set_interval')
   const factory Command.setInterval({
     required String cmdId,
     required int seconds,

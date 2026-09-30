@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sensor_hub/data/mqtt/mqtt_topics.dart';
+import 'package:sensor_hub/domain/mqtt_topics.dart';
 
 void main() {
   group('telemetryFilter', () {

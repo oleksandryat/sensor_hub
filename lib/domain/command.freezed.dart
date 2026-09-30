@@ -15,7 +15,7 @@ Command _$CommandFromJson(Map<String, dynamic> json) {
   switch (json['type']) {
     case 'reboot':
       return _Reboot.fromJson(json);
-    case 'setInterval':
+    case 'set_interval':
       return _SetInterval.fromJson(json);
 
     default:
@@ -182,7 +182,7 @@ class _SetInterval implements Command {
     required this.cmdId,
     required this.seconds,
     String? $type,
-  }) : $type = $type ?? 'setInterval';
+  }) : $type = $type ?? 'set_interval';
   factory _SetInterval.fromJson(Map<String, dynamic> json) =>
       _$SetIntervalFromJson(json);
 
