@@ -10,7 +10,7 @@ enum MqttDisconnectReason {
   unknown,
 }
 
-@freezed
+@Freezed(map: FreezedMapOptions(map: true))
 sealed class MqttGatewayState with _$MqttGatewayState {
   const factory MqttGatewayState.connecting() = _Connecting;
 

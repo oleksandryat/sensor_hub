@@ -37,6 +37,39 @@ class $MqttGatewayStateCopyWith<$Res> {
   );
 }
 
+/// Adds pattern-matching-related methods to [MqttGatewayState].
+extension MqttGatewayStatePatterns on MqttGatewayState {
+  /// A `switch`-like method, using callbacks.
+  ///
+  /// Callbacks receives the raw object, upcasted.
+  /// It is equivalent to doing:
+  /// ```dart
+  /// switch (sealedClass) {
+  ///   case final Subclass value:
+  ///     return ...;
+  ///   case final Subclass2 value:
+  ///     return ...;
+  /// }
+  /// ```
+
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_Connecting value) connecting,
+    required TResult Function(_Connected value) connected,
+    required TResult Function(_Disconnected value) disconnected,
+  }) {
+    final _that = this;
+    switch (_that) {
+      case _Connecting():
+        return connecting(_that);
+      case _Connected():
+        return connected(_that);
+      case _Disconnected():
+        return disconnected(_that);
+    }
+  }
+}
+
 /// @nodoc
 
 class _Connecting implements MqttGatewayState {
