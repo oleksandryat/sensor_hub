@@ -20,6 +20,7 @@ dependencies:
   mqtt5_client: ^5.0.0
   intl: ^0.20.3
   typed_data: ^1.4.0
+  mqtt_client: ^10.11.11
 
 dev_dependencies:
   flutter_test:
