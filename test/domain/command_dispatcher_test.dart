@@ -32,12 +32,12 @@ void main() {
       CommandResult? result;
 
       dispatcher
-          .send(Command.reboot(cmdId: 'c1'), deviceId: 1)
+          .send(Command.reboot(cmdId: 'c1'), deviceId: '1')
           .then((value) => result = value);
 
       messagesController.add(
         MqttGatewayMessage(
-          topic: topics.cmdAckFilter(1),
+          topic: topics.cmdAckFilter('1'),
           payload: jsonEncode(
             CommandAck(cmdId: 'c1', ok: true, error: null).toJson(),
           ),
@@ -56,12 +56,12 @@ void main() {
       CommandResult? result;
 
       dispatcher
-          .send(Command.reboot(cmdId: 'c1'), deviceId: 1)
+          .send(Command.reboot(cmdId: 'c1'), deviceId: '1')
           .then((value) => result = value);
 
       messagesController.add(
         MqttGatewayMessage(
-          topic: topics.cmdAckFilter(1),
+          topic: topics.cmdAckFilter('1'),
           payload: jsonEncode(
             CommandAck(
               cmdId: 'c1',
@@ -87,12 +87,12 @@ void main() {
       CommandResult? result;
 
       dispatcher
-          .send(Command.reboot(cmdId: 'c1'), deviceId: 1)
+          .send(Command.reboot(cmdId: 'c1'), deviceId: '1')
           .then((value) => result = value);
 
       messagesController.add(
         MqttGatewayMessage(
-          topic: topics.cmdAckFilter(1),
+          topic: topics.cmdAckFilter('1'),
           payload: jsonEncode(
             CommandAck(cmdId: 'c1', ok: false, error: null).toJson(),
           ),
@@ -114,7 +114,7 @@ void main() {
       CommandResult? result;
 
       dispatcher
-          .send(Command.reboot(cmdId: 'c1'), deviceId: 1)
+          .send(Command.reboot(cmdId: 'c1'), deviceId: '1')
           .then((value) => result = value);
 
       async.elapse(Duration(seconds: 5));
@@ -131,12 +131,12 @@ void main() {
         CommandResult? result;
 
         dispatcher
-            .send(Command.reboot(cmdId: 'c1'), deviceId: 1)
+            .send(Command.reboot(cmdId: 'c1'), deviceId: '1')
             .then((value) => result = value);
 
         messagesController.add(
           MqttGatewayMessage(
-            topic: topics.cmdAckFilter(1),
+            topic: topics.cmdAckFilter('1'),
             payload: jsonEncode(
               CommandAck(cmdId: 'c2', ok: true, error: null).toJson(),
             ),
@@ -149,7 +149,7 @@ void main() {
 
         messagesController.add(
           MqttGatewayMessage(
-            topic: topics.cmdAckFilter(1),
+            topic: topics.cmdAckFilter('1'),
             payload: jsonEncode(
               CommandAck(cmdId: 'c1', ok: true, error: null).toJson(),
             ),

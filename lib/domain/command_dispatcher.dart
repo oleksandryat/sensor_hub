@@ -8,7 +8,7 @@ import 'mqtt_gateway.dart';
 import 'mqtt_topics.dart';
 
 abstract interface class CommandDispatcher {
-  Future<CommandResult> send(Command command, {required int deviceId});
+  Future<CommandResult> send(Command command, {required String deviceId});
 }
 
 class MqttCommandDispatcher implements CommandDispatcher {
@@ -23,7 +23,10 @@ class MqttCommandDispatcher implements CommandDispatcher {
   ]);
 
   @override
-  Future<CommandResult> send(Command command, {required int deviceId}) async {
+  Future<CommandResult> send(
+    Command command, {
+    required String deviceId,
+  }) async {
     final cmdId = command.cmdId;
     final ackTopic = _topics.cmdAckFilter(deviceId);
     Completer<CommandAck?> ack = Completer();

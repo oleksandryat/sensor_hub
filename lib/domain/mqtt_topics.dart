@@ -3,7 +3,7 @@ class MqttTopics(final String prefix) {
 
   String get statusFilter => '${prefix}devices/+/status';
 
-  String cmdTopic(int deviceId) => '${prefix}devices/$deviceId/cmd';
+  String cmdTopic(String deviceId) => '${prefix}devices/$deviceId/cmd';
 
-  String cmdAckFilter(int deviceId) => '${prefix}devices/$deviceId/cmd/ack';
+  String cmdAckFilter(String deviceId) => '${prefix}devices/$deviceId/cmd/ack';
 }

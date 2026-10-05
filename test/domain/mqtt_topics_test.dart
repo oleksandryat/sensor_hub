@@ -27,22 +27,22 @@ void main() {
   group('cmdTopic', () {
     test('correct string when deviceId is positive', () {
       final topics = MqttTopics('my-prefix/');
-      expect(topics.cmdTopic(1), 'my-prefix/devices/1/cmd');
+      expect(topics.cmdTopic('1'), 'my-prefix/devices/1/cmd');
     });
     test('correct string when deviceId is positive', () {
       final topics = MqttTopics('my-prefix/');
-      expect(topics.cmdTopic(42), 'my-prefix/devices/42/cmd');
+      expect(topics.cmdTopic('42'), 'my-prefix/devices/42/cmd');
     });
   });
 
   group('cmdAckFilter', () {
     test('correct string when deviceId is positive', () {
       final topics = MqttTopics('my-prefix/');
-      expect(topics.cmdAckFilter(1), 'my-prefix/devices/1/cmd/ack');
+      expect(topics.cmdAckFilter('1'), 'my-prefix/devices/1/cmd/ack');
     });
     test('correct string when deviceId is positive', () {
       final topics = MqttTopics('my-prefix/');
-      expect(topics.cmdAckFilter(42), 'my-prefix/devices/42/cmd/ack');
+      expect(topics.cmdAckFilter('42'), 'my-prefix/devices/42/cmd/ack');
     });
   });
 }
