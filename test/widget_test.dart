@@ -1,10 +1,17 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sensor_hub/main.dart';
+import 'package:sensor_hub/app.dart';
+import 'package:sensor_hub/core/di/injection.dart';
 
 void main() {
-  testWidgets('SensorHubApp renders', (tester) async {
-    await tester.pumpWidget(const SensorHubApp());
+  setUp(() async {
+    await getIt.reset();
+    configureDependencies();
+  });
 
-    expect(find.text('SensorHub'), findsOneWidget);
+  testWidgets('SensorHubApp shows connection screen first', (tester) async {
+    await tester.pumpWidget(const SensorHubApp());
+    await tester.pump();
+
+    expect(find.text('Connection'), findsWidgets);
   });
 }
