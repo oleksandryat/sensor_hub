@@ -11,6 +11,7 @@ import '../../domain/device_repository.dart';
 import '../../domain/mqtt_gateway.dart';
 import '../../domain/mqtt_topics.dart';
 import '../../features/connection/cubit/connection_cubit.dart';
+import '../../features/dashboard/cubit/dashboard_cubit.dart';
 import '../router/app_router.dart';
 
 final getIt = GetIt.instance;
@@ -38,6 +39,7 @@ void configureDependencies() {
     ..registerFactory<ConnectionCubit>(
       () => ConnectionCubit(getIt(), _newClientId),
     )
+    ..registerFactory<DashboardCubit>(() => DashboardCubit(getIt(), getIt()))
     ..registerLazySingleton<DeviceRepository>(
       () => DeviceRepositoryImpl(
         gateway: getIt(),

@@ -39,6 +39,7 @@ class DeviceRepositoryImpl implements DeviceRepository {
 
   @override
   void start() {
+    if (_messagesSubscription != null) return;
     _staleCheckTimer = Timer.periodic(Duration(seconds: 1), (_) {
       bool changed = false;
       for (final d in _devices.values) {

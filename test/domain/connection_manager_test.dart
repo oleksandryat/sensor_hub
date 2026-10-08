@@ -43,9 +43,11 @@ void main() {
   });
 
   test('connect success', () async {
+    expect(manager.currentStatus, ConnectionStatus.disconnected);
     gateway.connectResults.add(null);
     await manager.connect(settings);
     await pumpEventQueue();
+    expect(manager.currentStatus, ConnectionStatus.connected);
     expect(statuses, [ConnectionStatus.connecting, ConnectionStatus.connected]);
   });
 

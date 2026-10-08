@@ -95,6 +95,8 @@ class ConnectionManager {
   final StreamController<ConnectionStatus> _statusController =
       StreamController.broadcast();
 
+  ConnectionStatus get currentStatus => _status;
+
   Stream<ConnectionStatus> get status => _statusController.stream;
 
   void _emitStatus(ConnectionStatus status) {

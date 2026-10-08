@@ -68,6 +68,19 @@ void main() {
     });
   });
 
+  test('second start() does not duplicate device updates', () {
+    run((async, gateway, _, repo, emitted) {
+      repo.start();
+      gateway.emitMessage(
+        topic: 'p/devices/a/telemetry',
+        payload: telemetry(1),
+      );
+      async.flushMicrotasks();
+
+      expect(emitted, hasLength(1));
+    });
+  });
+
   test('telemetry creates a device with last value', () {
     run((async, gateway, _, _, emitted) {
       gateway.emitMessage(
