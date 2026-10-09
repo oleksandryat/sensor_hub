@@ -25,29 +25,45 @@ class DashboardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Dashboard')),
-      body: BlocBuilder<DashboardCubit, DashboardState>(
-        builder: (context, state) {
-          return Column(
-            children: [
-              if (state.isOffline) const OfflineBanner(),
-              Expanded(
-                child: switch (state.status) {
-                  DashboardStatus.loading => const Center(
-                    key: Key('loading_state'),
-                    child: CircularProgressIndicator(),
-                  ),
-                  DashboardStatus.error => const Center(
-                    key: Key('error_state'),
-                    child: Text('Connection error'),
-                  ),
-                  DashboardStatus.loaded => DeviceList(devices: state.devices),
-                },
-              ),
-            ],
-          );
-        },
+    return BlocListener<DashboardCubit, DashboardState>(
+      listenWhen: (p, c) => c.feedback != null && p.feedback != c.feedback,
+      listener: (context, state) {
+        final feedback = state.feedback!;
+        final message = switch (feedback.result) {
+          final r when r.isSuccess => '${feedback.deviceId}: acknowledged',
+          final r when r.error != null => '${feedback.deviceId}: ${r.error}',
+          _ => '${feedback.deviceId}: no response in time',
+        };
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(content: Text(message)));
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Dashboard')),
+        body: BlocBuilder<DashboardCubit, DashboardState>(
+          builder: (context, state) {
+            return Column(
+              children: [
+                if (state.isOffline) const OfflineBanner(),
+                Expanded(
+                  child: switch (state.status) {
+                    DashboardStatus.loading => const Center(
+                      key: Key('loading_state'),
+                      child: CircularProgressIndicator(),
+                    ),
+                    DashboardStatus.error => const Center(
+                      key: Key('error_state'),
+                      child: Text('Connection error'),
+                    ),
+                    DashboardStatus.loaded => DeviceList(
+                      devices: state.devices,
+                    ),
+                  },
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

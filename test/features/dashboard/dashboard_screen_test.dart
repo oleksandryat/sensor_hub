@@ -2,6 +2,8 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:sensor_hub/domain/command_result.dart';
 import 'package:sensor_hub/domain/connection_status.dart';
 import 'package:sensor_hub/domain/device.dart';
 import 'package:sensor_hub/domain/telemetry.dart';
@@ -14,7 +16,10 @@ class MockDashboardCubit extends MockCubit<DashboardState>
 void main() {
   late MockDashboardCubit cubit;
 
-  setUp(() => cubit = MockDashboardCubit());
+  setUp(() {
+    cubit = MockDashboardCubit();
+    when(() => cubit.reboot(any())).thenAnswer((_) async {});
+  });
 
   Future<void> pump(WidgetTester tester, DashboardState state) {
     whenListen(
@@ -100,5 +105,76 @@ void main() {
     );
     expect(find.byKey(const Key('offline_banner')), findsOneWidget);
     expect(find.byKey(const Key('device_a')), findsOneWidget);
+  });
+
+  testWidgets('command buttons are enabled when online', (tester) async {
+    await pump(
+      tester,
+      DashboardState(
+        status: DashboardStatus.loaded,
+        devices: [device],
+        connection: ConnectionStatus.connected,
+      ),
+    );
+    await tester.tap(find.byKey(const Key('reboot_a')));
+    verify(() => cubit.reboot('a')).called(1);
+  });
+
+  testWidgets('command buttons are disabled when offline', (tester) async {
+    await pump(
+      tester,
+      DashboardState(
+        status: DashboardStatus.loaded,
+        devices: [device],
+        connection: ConnectionStatus.reconnecting,
+      ),
+    );
+    final button = tester.widget<TextButton>(find.byKey(const Key('reboot_a')));
+    expect(button.onPressed, isNull);
+  });
+
+  testWidgets('sending shows progress and disables buttons', (tester) async {
+    await pump(
+      tester,
+      DashboardState(
+        status: DashboardStatus.loaded,
+        devices: [device],
+        connection: ConnectionStatus.connected,
+        sending: const {'a'},
+      ),
+    );
+    expect(find.byKey(const Key('command_progress')), findsOneWidget);
+    final button = tester.widget<TextButton>(find.byKey(const Key('reboot_a')));
+    expect(button.onPressed, isNull);
+  });
+
+  testWidgets('timeout feedback shows a snackbar', (tester) async {
+    final online = DashboardState(
+      status: DashboardStatus.loaded,
+      devices: [device],
+      connection: ConnectionStatus.connected,
+    );
+    whenListen(
+      cubit,
+      Stream.value(
+        online.copyWith(
+          feedback: (
+            deviceId: 'a',
+            result: const CommandResult.timedOut(cmdId: 'c1'),
+          ),
+        ),
+      ),
+      initialState: online,
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BlocProvider<DashboardCubit>.value(
+          value: cubit,
+          child: const DashboardView(),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('a: no response in time'), findsOneWidget);
   });
 }

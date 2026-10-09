@@ -22,6 +22,8 @@ const _staleThreshold = Duration(seconds: 15);
 String _newClientId() =>
     'sensorhub-${Random().nextInt(1 << 32).toRadixString(16)}';
 
+String _newCmdId() => Random().nextInt(1 << 32).toRadixString(16);
+
 void configureDependencies() {
   getIt
     ..registerSingleton<AppRouter>(AppRouter())
@@ -39,7 +41,9 @@ void configureDependencies() {
     ..registerFactory<ConnectionCubit>(
       () => ConnectionCubit(getIt(), _newClientId),
     )
-    ..registerFactory<DashboardCubit>(() => DashboardCubit(getIt(), getIt()))
+    ..registerFactory<DashboardCubit>(
+      () => DashboardCubit(getIt(), getIt(), getIt(), _newCmdId),
+    )
     ..registerLazySingleton<DeviceRepository>(
       () => DeviceRepositoryImpl(
         gateway: getIt(),

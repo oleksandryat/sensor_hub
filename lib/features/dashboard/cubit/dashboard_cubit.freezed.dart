@@ -17,6 +17,8 @@ mixin _$DashboardState {
   DashboardStatus get status;
   List<Device> get devices;
   ConnectionStatus get connection;
+  Set<String> get sending;
+  CommandFeedback? get feedback;
 
   /// Create a copy of DashboardState
   /// with the given fields replaced by the non-null parameter values.
@@ -41,7 +43,13 @@ mixin _$DashboardState {
               _this.devices,
             ) &&
             (identical(other.connection, _this.connection) ||
-                other.connection == _this.connection));
+                other.connection == _this.connection) &&
+            const DeepCollectionEquality().equals(
+              other.sending,
+              _this.sending,
+            ) &&
+            (identical(other.feedback, _this.feedback) ||
+                other.feedback == _this.feedback));
   }
 
   @override
@@ -52,13 +60,15 @@ mixin _$DashboardState {
       _this.status,
       const DeepCollectionEquality().hash(_this.devices),
       _this.connection,
+      const DeepCollectionEquality().hash(_this.sending),
+      _this.feedback,
     );
   }
 
   @override
   String toString() {
     final _this = this as DashboardState;
-    return 'DashboardState(status: ${_this.status}, devices: ${_this.devices}, connection: ${_this.connection})';
+    return 'DashboardState(status: ${_this.status}, devices: ${_this.devices}, connection: ${_this.connection}, sending: ${_this.sending}, feedback: ${_this.feedback})';
   }
 }
 
@@ -73,6 +83,8 @@ abstract mixin class $DashboardStateCopyWith<$Res> {
     DashboardStatus status,
     List<Device> devices,
     ConnectionStatus connection,
+    Set<String> sending,
+    CommandFeedback? feedback,
   });
 }
 
@@ -92,6 +104,8 @@ class _$DashboardStateCopyWithImpl<$Res>
     Object? status = null,
     Object? devices = null,
     Object? connection = null,
+    Object? sending = null,
+    Object? feedback = freezed,
   }) {
     return _then(
       DashboardState(
@@ -107,6 +121,14 @@ class _$DashboardStateCopyWithImpl<$Res>
             ? _self.connection
             : connection // ignore: cast_nullable_to_non_nullable
                   as ConnectionStatus,
+        sending: null == sending
+            ? _self.sending
+            : sending // ignore: cast_nullable_to_non_nullable
+                  as Set<String>,
+        feedback: freezed == feedback
+            ? _self.feedback
+            : feedback // ignore: cast_nullable_to_non_nullable
+                  as CommandFeedback?,
       ),
     );
   }
@@ -119,7 +141,10 @@ class _DashboardState extends DashboardState {
     this.status = DashboardStatus.loading,
     List<Device> devices = const [],
     this.connection = ConnectionStatus.disconnected,
+    Set<String> sending = const {},
+    this.feedback,
   }) : _devices = devices,
+       _sending = sending,
        super._();
 
   @override
@@ -137,6 +162,17 @@ class _DashboardState extends DashboardState {
   @override
   @JsonKey()
   final ConnectionStatus connection;
+  final Set<String> _sending;
+  @override
+  @JsonKey()
+  Set<String> get sending {
+    if (_sending is EqualUnmodifiableSetView) return _sending;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableSetView(_sending);
+  }
+
+  @override
+  final CommandFeedback? feedback;
 
   /// Create a copy of DashboardState
   /// with the given fields replaced by the non-null parameter values.
@@ -154,7 +190,10 @@ class _DashboardState extends DashboardState {
             (identical(other.status, status) || other.status == status) &&
             const DeepCollectionEquality().equals(other.devices, _devices) &&
             (identical(other.connection, connection) ||
-                other.connection == connection));
+                other.connection == connection) &&
+            const DeepCollectionEquality().equals(other.sending, _sending) &&
+            (identical(other.feedback, feedback) ||
+                other.feedback == feedback));
   }
 
   @override
@@ -164,12 +203,14 @@ class _DashboardState extends DashboardState {
       status,
       const DeepCollectionEquality().hash(_devices),
       connection,
+      const DeepCollectionEquality().hash(_sending),
+      feedback,
     );
   }
 
   @override
   String toString() {
-    return 'DashboardState(status: $status, devices: $devices, connection: $connection)';
+    return 'DashboardState(status: $status, devices: $devices, connection: $connection, sending: $sending, feedback: $feedback)';
   }
 }
 
@@ -186,6 +227,8 @@ abstract mixin class _$DashboardStateCopyWith<$Res>
     DashboardStatus status,
     List<Device> devices,
     ConnectionStatus connection,
+    Set<String> sending,
+    CommandFeedback? feedback,
   });
 }
 
@@ -205,6 +248,8 @@ class __$DashboardStateCopyWithImpl<$Res>
     Object? status = null,
     Object? devices = null,
     Object? connection = null,
+    Object? sending = null,
+    Object? feedback = freezed,
   }) {
     return _then(
       _DashboardState(
@@ -220,6 +265,14 @@ class __$DashboardStateCopyWithImpl<$Res>
             ? _self.connection
             : connection // ignore: cast_nullable_to_non_nullable
                   as ConnectionStatus,
+        sending: null == sending
+            ? _self._sending
+            : sending // ignore: cast_nullable_to_non_nullable
+                  as Set<String>,
+        feedback: freezed == feedback
+            ? _self.feedback
+            : feedback // ignore: cast_nullable_to_non_nullable
+                  as CommandFeedback?,
       ),
     );
   }

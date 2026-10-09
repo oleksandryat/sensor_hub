@@ -85,8 +85,8 @@ class _$CommandResultCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _Succeeded implements CommandResult {
-  const _Succeeded({required this.cmdId});
+class _Succeeded extends CommandResult {
+  const _Succeeded({required this.cmdId}) : super._();
 
   @override
   final String cmdId;
@@ -155,8 +155,8 @@ class __$SucceededCopyWithImpl<$Res> implements _$SucceededCopyWith<$Res> {
 
 /// @nodoc
 
-class _Failed implements CommandResult {
-  const _Failed({required this.cmdId, required this.error});
+class _Failed extends CommandResult {
+  const _Failed({required this.cmdId, required this.error}) : super._();
 
   @override
   final String cmdId;
@@ -229,8 +229,8 @@ class __$FailedCopyWithImpl<$Res> implements _$FailedCopyWith<$Res> {
 
 /// @nodoc
 
-class _TimedOut implements CommandResult {
-  const _TimedOut({required this.cmdId});
+class _TimedOut extends CommandResult {
+  const _TimedOut({required this.cmdId}) : super._();
 
   @override
   final String cmdId;
