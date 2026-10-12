@@ -1,6 +1,4 @@
-import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sensor_hub/domain/command_result.dart';
@@ -10,8 +8,7 @@ import 'package:sensor_hub/domain/telemetry.dart';
 import 'package:sensor_hub/features/dashboard/cubit/dashboard_cubit.dart';
 import 'package:sensor_hub/features/dashboard/view/dashboard_screen.dart';
 
-class MockDashboardCubit extends MockCubit<DashboardState>
-    implements DashboardCubit {}
+import '../../helpers/helpers.dart';
 
 void main() {
   late MockDashboardCubit cubit;
@@ -21,21 +18,12 @@ void main() {
     when(() => cubit.reboot(any())).thenAnswer((_) async {});
   });
 
-  Future<void> pump(WidgetTester tester, DashboardState state) {
-    whenListen(
-      cubit,
-      const Stream<DashboardState>.empty(),
-      initialState: state,
-    );
-    return tester.pumpWidget(
-      MaterialApp(
-        home: BlocProvider<DashboardCubit>.value(
-          value: cubit,
-          child: const DashboardView(),
-        ),
-      ),
-    );
-  }
+  Future<void> pump(WidgetTester tester, DashboardState state) =>
+      tester.pumpView<DashboardCubit, DashboardState>(
+        const DashboardView(),
+        cubit: cubit,
+        state: state,
+      );
 
   final device = Device(
     id: 'a',
@@ -154,23 +142,16 @@ void main() {
       devices: [device],
       connection: ConnectionStatus.connected,
     );
-    whenListen(
-      cubit,
-      Stream.value(
+    await tester.pumpView<DashboardCubit, DashboardState>(
+      const DashboardView(),
+      cubit: cubit,
+      state: online,
+      updates: Stream.value(
         online.copyWith(
           feedback: (
             deviceId: 'a',
             result: const CommandResult.timedOut(cmdId: 'c1'),
           ),
-        ),
-      ),
-      initialState: online,
-    );
-    await tester.pumpWidget(
-      MaterialApp(
-        home: BlocProvider<DashboardCubit>.value(
-          value: cubit,
-          child: const DashboardView(),
         ),
       ),
     );

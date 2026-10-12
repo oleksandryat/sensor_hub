@@ -1,14 +1,11 @@
-import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sensor_hub/domain/connection_status.dart';
 import 'package:sensor_hub/features/connection/cubit/connection_cubit.dart';
 import 'package:sensor_hub/features/connection/view/connection_screen.dart';
 
-class MockConnectionCubit extends MockCubit<ConnectionCubitState>
-    implements ConnectionCubit {}
+import '../../helpers/helpers.dart';
 
 void main() {
   late MockConnectionCubit cubit;
@@ -26,21 +23,12 @@ void main() {
     when(() => cubit.disconnect()).thenAnswer((_) async {});
   });
 
-  Future<void> pump(WidgetTester tester, ConnectionStatus status) {
-    whenListen(
-      cubit,
-      const Stream<ConnectionCubitState>.empty(),
-      initialState: ConnectionCubitState(status: status),
-    );
-    return tester.pumpWidget(
-      MaterialApp(
-        home: BlocProvider<ConnectionCubit>.value(
-          value: cubit,
-          child: const ConnectionView(),
-        ),
-      ),
-    );
-  }
+  Future<void> pump(WidgetTester tester, ConnectionStatus status) =>
+      tester.pumpView<ConnectionCubit, ConnectionCubitState>(
+        const ConnectionView(),
+        cubit: cubit,
+        state: ConnectionCubitState(status: status),
+      );
 
   testWidgets('shows defaults and valid form connects', (tester) async {
     await pump(tester, ConnectionStatus.disconnected);
