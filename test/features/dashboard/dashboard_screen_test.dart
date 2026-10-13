@@ -16,6 +16,7 @@ void main() {
   setUp(() {
     cubit = MockDashboardCubit();
     when(() => cubit.reboot(any())).thenAnswer((_) async {});
+    when(() => cubit.setInterval(any(), any())).thenAnswer((_) async {});
   });
 
   Future<void> pump(WidgetTester tester, DashboardState state) =>
@@ -157,5 +158,95 @@ void main() {
     );
     await tester.pump();
     expect(find.text('a: no response in time'), findsOneWidget);
+  });
+
+  DashboardState loaded({
+    List<Device>? devices,
+    ConnectionStatus connection = ConnectionStatus.connected,
+  }) => DashboardState(
+    status: DashboardStatus.loaded,
+    devices: devices ?? [device],
+    connection: connection,
+  );
+
+  Future<void> pumpFeedback(WidgetTester tester, CommandResult result) async {
+    final state = loaded();
+    await tester.pumpView<DashboardCubit, DashboardState>(
+      const DashboardView(),
+      cubit: cubit,
+      state: state,
+      updates: Stream.value(
+        state.copyWith(feedback: (deviceId: 'a', result: result)),
+      ),
+    );
+    await tester.pump();
+  }
+
+  testWidgets('ack feedback shows a snackbar', (tester) async {
+    await pumpFeedback(tester, const CommandResult.succeeded(cmdId: 'c1'));
+    expect(find.text('a: acknowledged'), findsOneWidget);
+  });
+
+  testWidgets('failed feedback shows the error', (tester) async {
+    await pumpFeedback(
+      tester,
+      const CommandResult.failed(cmdId: 'c1', error: 'boom'),
+    );
+    expect(find.text('a: boom'), findsOneWidget);
+  });
+
+  testWidgets('renders a tile per device', (tester) async {
+    await pump(
+      tester,
+      loaded(
+        devices: [
+          device,
+          device.copyWith(id: 'b'),
+        ],
+      ),
+    );
+    expect(find.byKey(const Key('device_a')), findsOneWidget);
+    expect(find.byKey(const Key('device_b')), findsOneWidget);
+  });
+
+  testWidgets('device without data shows a placeholder', (tester) async {
+    await pump(
+      tester,
+      loaded(devices: [const Device(id: 'n', online: true, isStale: false)]),
+    );
+    expect(find.text('No data yet'), findsOneWidget);
+    expect(find.textContaining('°C'), findsNothing);
+  });
+
+  testWidgets('set interval sends the entered value', (tester) async {
+    await pump(tester, loaded());
+    await tester.tap(find.byKey(const Key('set_interval_a')));
+    await tester.pump();
+    await tester.enterText(find.byKey(const Key('interval_field')), '10');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('interval_confirm')));
+    await tester.pump();
+    verify(() => cubit.setInterval('a', 10)).called(1);
+  });
+
+  testWidgets('cancelling the interval dialog sends nothing', (tester) async {
+    await pump(tester, loaded());
+    await tester.tap(find.byKey(const Key('set_interval_a')));
+    await tester.pump();
+    await tester.tap(find.text('Cancel'));
+    await tester.pump();
+    verifyNever(() => cubit.setInterval(any(), any()));
+  });
+
+  testWidgets('interval confirm is disabled for zero', (tester) async {
+    await pump(tester, loaded());
+    await tester.tap(find.byKey(const Key('set_interval_a')));
+    await tester.pump();
+    await tester.enterText(find.byKey(const Key('interval_field')), '0');
+    await tester.pump();
+    final confirm = tester.widget<FilledButton>(
+      find.byKey(const Key('interval_confirm')),
+    );
+    expect(confirm.onPressed, isNull);
   });
 }
