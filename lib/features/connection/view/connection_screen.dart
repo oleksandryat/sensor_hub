@@ -37,7 +37,17 @@ class ConnectionView extends StatelessWidget {
       builder: (context, state) {
         final cubit = context.read<ConnectionCubit>();
         return Scaffold(
-          appBar: AppBar(title: const Text('Connection')),
+          appBar: AppBar(
+            title: const Text('Connection'),
+            actions: [
+              IconButton(
+                key: const Key('native_lab_button'),
+                tooltip: 'Native Lab',
+                icon: const Icon(Icons.science_outlined),
+                onPressed: () => context.router.push(const NativeLabRoute()),
+              ),
+            ],
+          ),
           body: SafeArea(
             child: ListView(
               padding: const EdgeInsets.all(16),

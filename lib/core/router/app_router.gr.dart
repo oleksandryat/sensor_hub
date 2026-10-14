@@ -41,3 +41,51 @@ class DashboardRoute extends PageRouteInfo<void> {
     },
   );
 }
+
+/// generated route for
+/// [DeviceInfoScreen]
+class DeviceInfoRoute extends PageRouteInfo<void> {
+  const DeviceInfoRoute({List<PageRouteInfo>? children})
+    : super(DeviceInfoRoute.name, initialChildren: children);
+
+  static const String name = 'DeviceInfoRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DeviceInfoScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [ExportScreen]
+class ExportRoute extends PageRouteInfo<void> {
+  const ExportRoute({List<PageRouteInfo>? children})
+    : super(ExportRoute.name, initialChildren: children);
+
+  static const String name = 'ExportRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const ExportScreen();
+    },
+  );
+}
+
+/// generated route for
+/// [NativeLabScreen]
+class NativeLabRoute extends PageRouteInfo<void> {
+  const NativeLabRoute({List<PageRouteInfo>? children})
+    : super(NativeLabRoute.name, initialChildren: children);
+
+  static const String name = 'NativeLabRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const NativeLabScreen();
+    },
+  );
+}

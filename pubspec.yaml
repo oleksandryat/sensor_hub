@@ -21,6 +21,8 @@ dependencies:
   intl: ^0.20.3
   typed_data: ^1.4.0
   mqtt_client: ^10.11.11
+  sensorhub_native:
+    path: packages/sensorhub_native
 
 dev_dependencies:
   flutter_test:

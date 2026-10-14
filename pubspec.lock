@@ -608,6 +608,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.6.0"
+  sensorhub_native:
+    dependency: "direct main"
+    description:
+      path: "packages/sensorhub_native"
+      relative: true
+    source: path
+    version: "0.0.1"
   shelf:
     dependency: transitive
     description:

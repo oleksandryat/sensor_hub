@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:get_it/get_it.dart';
+import 'package:sensorhub_native/sensorhub_native.dart';
 
 import '../../data/device_repository_impl.dart';
 import '../../data/mqtt/mqtt5_client_gateway.dart';
@@ -12,6 +13,8 @@ import '../../domain/mqtt_gateway.dart';
 import '../../domain/mqtt_topics.dart';
 import '../../features/connection/cubit/connection_cubit.dart';
 import '../../features/dashboard/cubit/dashboard_cubit.dart';
+import '../../features/native_lab/device_info/cubit/device_info_cubit.dart';
+import '../../features/native_lab/export/cubit/export_cubit.dart';
 import '../router/app_router.dart';
 
 final getIt = GetIt.instance;
@@ -41,6 +44,9 @@ void configureDependencies() {
     ..registerFactory<ConnectionCubit>(
       () => ConnectionCubit(getIt(), _newClientId),
     )
+    ..registerLazySingleton<SensorhubNative>(SensorhubNative.new)
+    ..registerFactory<DeviceInfoCubit>(() => DeviceInfoCubit(getIt()))
+    ..registerFactory<ExportCubit>(() => ExportCubit(getIt(), getIt()))
     ..registerFactory<DashboardCubit>(
       () => DashboardCubit(getIt(), getIt(), getIt(), _newCmdId),
     )
