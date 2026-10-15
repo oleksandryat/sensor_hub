@@ -24,6 +24,15 @@ void main() {
     });
   });
 
+  group('telemetryTopic', () {
+    test('includes prefix and device id', () {
+      expect(
+        MqttTopics('my-prefix/').telemetryTopic('phone-1'),
+        'my-prefix/devices/phone-1/telemetry',
+      );
+    });
+  });
+
   group('cmdTopic', () {
     test('correct string when deviceId is positive', () {
       final topics = MqttTopics('my-prefix/');

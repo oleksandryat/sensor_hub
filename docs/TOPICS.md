@@ -12,3 +12,5 @@ Command ack timeout: **5 seconds**.
 | `devices/{id}/cmd/ack`   | device → app | `{"cmdId": string, "ok": bool, "error": string?}`   | 1   | no       |
 
 `{id}` is a device identifier segment carried in the topic itself — it is not repeated inside the JSON payload.
+
+The Native Lab "Phone as sensor" demo publishes as a regular device `phone-{id}`: `value` is the acceleration magnitude in m/s² (`unit` = `m/s²`), at most once per second.

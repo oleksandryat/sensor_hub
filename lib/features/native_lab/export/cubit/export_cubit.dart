@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sensorhub_native/sensorhub_native.dart';
@@ -37,7 +36,7 @@ class ExportCubit extends Cubit<ExportState> {
         subject: 'SensorHub telemetry',
       );
       emit(state.copyWith(status: ExportStatus.done, outcome: outcome));
-    } on PlatformException catch (e) {
+    } on NativeException catch (e) {
       emit(
         state.copyWith(status: ExportStatus.error, error: e.message ?? e.code),
       );

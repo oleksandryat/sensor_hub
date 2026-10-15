@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sensor_hub/domain/device.dart';
@@ -79,10 +78,10 @@ void main() {
   );
 
   blocTest<ExportCubit, ExportState>(
-    'export maps PlatformException to error',
+    'export maps NativeException to error',
     setUp: () =>
         when(() => native.shareText(any(), subject: any(named: 'subject')))
-            .thenThrow(PlatformException(code: 'no_activity')),
+            .thenThrow(NativeException('no_activity')),
     build: () => ExportCubit(repo, native),
     act: (c) async {
       c.start();

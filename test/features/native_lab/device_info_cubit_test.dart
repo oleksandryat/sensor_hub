@@ -1,5 +1,4 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sensor_hub/features/native_lab/device_info/cubit/device_info_cubit.dart';
@@ -31,9 +30,10 @@ void main() {
   );
 
   blocTest<DeviceInfoCubit, DeviceInfoState>(
-    'load maps PlatformException to error',
-    setUp: () => when(() => native.getDeviceInfo())
-        .thenThrow(PlatformException(code: 'boom', message: 'native failed')),
+    'load maps NativeException to error',
+    setUp: () =>
+        when(() => native.getDeviceInfo())
+            .thenThrow(NativeException('boom', 'native failed')),
     build: () => DeviceInfoCubit(native),
     act: (c) => c.load(),
     expect: () => [

@@ -89,3 +89,19 @@ class NativeLabRoute extends PageRouteInfo<void> {
     },
   );
 }
+
+/// generated route for
+/// [PhoneSensorScreen]
+class PhoneSensorRoute extends PageRouteInfo<void> {
+  const PhoneSensorRoute({List<PageRouteInfo>? children})
+    : super(PhoneSensorRoute.name, initialChildren: children);
+
+  static const String name = 'PhoneSensorRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const PhoneSensorScreen();
+    },
+  );
+}

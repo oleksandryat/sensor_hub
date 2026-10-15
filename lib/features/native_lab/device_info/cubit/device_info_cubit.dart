@@ -1,4 +1,3 @@
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sensorhub_native/sensorhub_native.dart';
@@ -16,7 +15,7 @@ class DeviceInfoCubit extends Cubit<DeviceInfoState> {
     try {
       final info = await _native.getDeviceInfo();
       emit(DeviceInfoState(status: DeviceInfoStatus.loaded, info: info));
-    } on PlatformException catch (e) {
+    } on NativeException catch (e) {
       emit(
         DeviceInfoState(
           status: DeviceInfoStatus.error,

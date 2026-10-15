@@ -29,10 +29,12 @@ class NativeLabScreen extends StatelessWidget {
             subtitle: 'MethodChannel + native share sheet',
             onTap: () => router.push(const ExportRoute()),
           ),
-          const DemoTile(
+          DemoTile(
+            tileKey: const Key('demo_phone_sensor'),
             icon: Icons.sensors,
             title: 'Phone as sensor',
-            subtitle: 'EventChannel (coming soon)',
+            subtitle: 'EventChannel accelerometer + MQTT',
+            onTap: () => router.push(const PhoneSensorRoute()),
           ),
           const DemoTile(
             icon: Icons.memory,

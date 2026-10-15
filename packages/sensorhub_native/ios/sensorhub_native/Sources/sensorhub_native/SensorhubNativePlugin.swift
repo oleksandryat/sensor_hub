@@ -6,6 +6,8 @@ public class SensorhubNativePlugin: NSObject, FlutterPlugin {
     let channel = FlutterMethodChannel(name: "sensorhub_native", binaryMessenger: registrar.messenger())
     let instance = SensorhubNativePlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
+    let accelerometer = FlutterEventChannel(name: "sensorhub_native/accelerometer", binaryMessenger: registrar.messenger())
+    accelerometer.setStreamHandler(AccelerometerStreamHandler())
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
