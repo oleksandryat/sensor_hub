@@ -4,10 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sensor_hub/core/router/app_router.dart';
+import 'package:sensor_hub/domain/latency_stats.dart';
 import 'package:sensor_hub/features/native_lab/device_info/cubit/device_info_cubit.dart';
 import 'package:sensor_hub/features/native_lab/device_info/view/device_info_screen.dart';
 import 'package:sensor_hub/features/native_lab/phone_sensor/cubit/phone_sensor_cubit.dart';
 import 'package:sensor_hub/features/native_lab/phone_sensor/view/phone_sensor_screen.dart';
+import 'package:sensor_hub/features/native_lab/system_events/cubit/system_events_cubit.dart';
+import 'package:sensor_hub/features/native_lab/system_events/view/system_events_screen.dart';
 import 'package:sensor_hub/features/native_lab/view/native_lab_screen.dart';
 import 'package:sensorhub_native/sensorhub_native.dart';
 
@@ -22,6 +25,9 @@ class MockDeviceInfoCubit extends MockCubit<DeviceInfoState>
 
 class MockPhoneSensorCubit extends MockCubit<PhoneSensorState>
     implements PhoneSensorCubit {}
+
+class MockSystemEventsCubit extends MockCubit<SystemEventsState>
+    implements SystemEventsCubit {}
 
 void main() {
   setUpAll(() => registerFallbackValue(FakeRoute()));
@@ -40,10 +46,12 @@ void main() {
     await tester.tap(find.byKey(const Key('demo_device_info')));
     await tester.tap(find.byKey(const Key('demo_export')));
     await tester.tap(find.byKey(const Key('demo_phone_sensor')));
+    await tester.tap(find.byKey(const Key('demo_system_events')));
 
     verify(() => router.push(const DeviceInfoRoute())).called(1);
     verify(() => router.push(const ExportRoute())).called(1);
     verify(() => router.push(const PhoneSensorRoute())).called(1);
+    verify(() => router.push(const SystemEventsRoute())).called(1);
   });
 
   testWidgets('device info shows loaded values', (tester) async {
@@ -144,6 +152,94 @@ void main() {
       await tester.tap(find.byKey(const Key('sensor_publish_switch')));
 
       verify(() => cubit.setPublishing(true)).called(1);
+    });
+  });
+
+  group('system events', () {
+    late MockSystemEventsCubit cubit;
+
+    setUp(() {
+      cubit = MockSystemEventsCubit();
+      when(() => cubit.pingCount).thenReturn(100);
+      when(() => cubit.runPing()).thenAnswer((_) async {});
+    });
+
+    Future<void> pump(WidgetTester tester, SystemEventsState state) =>
+        tester.pumpView<SystemEventsCubit, SystemEventsState>(
+          const SystemEventsView(),
+          cubit: cubit,
+          state: state,
+        );
+
+    testWidgets('shows the empty state and starts a ping run', (tester) async {
+      await pump(tester, const SystemEventsState());
+
+      expect(find.byKey(const Key('events_empty')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('ping_run')));
+
+      verify(() => cubit.runPing()).called(1);
+    });
+
+    testWidgets('disables the run button while running', (tester) async {
+      await pump(
+        tester,
+        const SystemEventsState(pingStatus: PingStatus.running),
+      );
+
+      final button = tester.widget<FilledButton>(
+        find.byKey(const Key('ping_run')),
+      );
+      expect(button.onPressed, isNull);
+    });
+
+    testWidgets('shows ping results and native events', (tester) async {
+      await pump(
+        tester,
+        SystemEventsState(
+          pingStatus: PingStatus.done,
+          results: const [
+            PingResult(
+              codec: PingCodec.standard,
+              payloadSize: 1000,
+              stats: LatencyStats(
+                count: 100,
+                min: Duration(microseconds: 100),
+                median: Duration(microseconds: 250),
+                p95: Duration(microseconds: 1200),
+                max: Duration(milliseconds: 3),
+              ),
+            ),
+          ],
+          events: [
+            MemoryPressureEvent(
+              level: MemoryPressure.critical,
+              source: 'TRIM_MEMORY_RUNNING_LOW',
+              timestamp: DateTime(2026, 10, 28, 9, 5, 7, 42),
+            ),
+            LifecycleEvent(
+              foreground: false,
+              timestamp: DateTime(2026, 10, 28, 9, 5),
+            ),
+          ],
+        ),
+      );
+
+      expect(find.byKey(const Key('ping_standard_1000')), findsOneWidget);
+      expect(find.text('0.25 / 1.20 ms'), findsOneWidget);
+      expect(find.text('Memory pressure: critical'), findsOneWidget);
+      expect(find.text('TRIM_MEMORY_RUNNING_LOW'), findsOneWidget);
+      expect(find.text('09:05:07.042'), findsOneWidget);
+      expect(find.text('App in background'), findsOneWidget);
+    });
+
+    testWidgets('shows the ping error', (tester) async {
+      await pump(
+        tester,
+        const SystemEventsState(pingStatus: PingStatus.error, error: 'boom'),
+      );
+
+      expect(find.byKey(const Key('ping_error')), findsOneWidget);
+      expect(find.text('boom'), findsOneWidget);
     });
   });
 }

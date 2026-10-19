@@ -2,12 +2,20 @@ import Flutter
 import UIKit
 
 public class SensorhubNativePlugin: NSObject, FlutterPlugin {
+  // Retained by the registrar via the method call delegate.
+  private let systemEvents: SystemEventsReporter
+
+  init(messenger: FlutterBinaryMessenger) {
+    systemEvents = SystemEventsReporter(messenger: messenger)
+  }
+
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "sensorhub_native", binaryMessenger: registrar.messenger())
-    let instance = SensorhubNativePlugin()
+    let instance = SensorhubNativePlugin(messenger: registrar.messenger())
     registrar.addMethodCallDelegate(instance, channel: channel)
     let accelerometer = FlutterEventChannel(name: "sensorhub_native/accelerometer", binaryMessenger: registrar.messenger())
     accelerometer.setStreamHandler(AccelerometerStreamHandler())
+    PingHandlers.register(messenger: registrar.messenger())
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {

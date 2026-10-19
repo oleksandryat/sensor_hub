@@ -105,3 +105,19 @@ class PhoneSensorRoute extends PageRouteInfo<void> {
     },
   );
 }
+
+/// generated route for
+/// [SystemEventsScreen]
+class SystemEventsRoute extends PageRouteInfo<void> {
+  const SystemEventsRoute({List<PageRouteInfo>? children})
+    : super(SystemEventsRoute.name, initialChildren: children);
+
+  static const String name = 'SystemEventsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const SystemEventsScreen();
+    },
+  );
+}

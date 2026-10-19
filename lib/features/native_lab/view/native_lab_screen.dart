@@ -36,10 +36,12 @@ class NativeLabScreen extends StatelessWidget {
             subtitle: 'EventChannel accelerometer + MQTT',
             onTap: () => router.push(const PhoneSensorRoute()),
           ),
-          const DemoTile(
+          DemoTile(
+            tileKey: const Key('demo_system_events'),
             icon: Icons.memory,
             title: 'System events',
-            subtitle: 'BasicMessageChannel (coming soon)',
+            subtitle: 'BasicMessageChannel events + ping latency',
+            onTap: () => router.push(const SystemEventsRoute()),
           ),
         ],
       ),

@@ -17,6 +17,7 @@ import '../../features/dashboard/cubit/dashboard_cubit.dart';
 import '../../features/native_lab/device_info/cubit/device_info_cubit.dart';
 import '../../features/native_lab/export/cubit/export_cubit.dart';
 import '../../features/native_lab/phone_sensor/cubit/phone_sensor_cubit.dart';
+import '../../features/native_lab/system_events/cubit/system_events_cubit.dart';
 import '../router/app_router.dart';
 
 final getIt = GetIt.instance;
@@ -65,6 +66,7 @@ void configureDependencies() {
     ..registerFactory<PhoneSensorCubit>(
       () => PhoneSensorCubit(getIt(), getIt(), getIt(), DateTime.now),
     )
+    ..registerFactory<SystemEventsCubit>(() => SystemEventsCubit(getIt()))
     ..registerFactory<DashboardCubit>(
       () => DashboardCubit(getIt(), getIt(), getIt(), _newCmdId),
     )

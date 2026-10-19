@@ -15,6 +15,7 @@ import io.flutter.plugin.common.MethodChannel.Result
 class SensorhubNativePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
   private lateinit var channel: MethodChannel
   private lateinit var accelerometerChannel: EventChannel
+  private lateinit var systemEvents: SystemEventsReporter
 
   // Null while the plugin is detached from an Activity (e.g. background engine).
   private var activity: Activity? = null
@@ -24,27 +25,36 @@ class SensorhubNativePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     channel.setMethodCallHandler(this)
     accelerometerChannel = EventChannel(binding.binaryMessenger, "sensorhub_native/accelerometer")
     accelerometerChannel.setStreamHandler(AccelerometerStreamHandler(binding.applicationContext))
+    systemEvents = SystemEventsReporter(binding.binaryMessenger, binding.applicationContext)
+    systemEvents.start()
+    PingHandlers.register(binding.binaryMessenger)
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     channel.setMethodCallHandler(null)
     accelerometerChannel.setStreamHandler(null)
+    systemEvents.stop()
+    PingHandlers.unregister(binding.binaryMessenger)
   }
 
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
     activity = binding.activity
+    systemEvents.attachActivity(binding.activity)
   }
 
   override fun onDetachedFromActivityForConfigChanges() {
     activity = null
+    systemEvents.detachActivity()
   }
 
   override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
     activity = binding.activity
+    systemEvents.attachActivity(binding.activity)
   }
 
   override fun onDetachedFromActivity() {
     activity = null
+    systemEvents.detachActivity()
   }
 
   override fun onMethodCall(call: MethodCall, result: Result) {

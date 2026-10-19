@@ -5,6 +5,7 @@ import '../../features/dashboard/view/dashboard_screen.dart';
 import '../../features/native_lab/device_info/view/device_info_screen.dart';
 import '../../features/native_lab/export/view/export_screen.dart';
 import '../../features/native_lab/phone_sensor/view/phone_sensor_screen.dart';
+import '../../features/native_lab/system_events/view/system_events_screen.dart';
 import '../../features/native_lab/view/native_lab_screen.dart';
 
 part 'app_router.gr.dart';
@@ -19,5 +20,6 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: DeviceInfoRoute.page),
     AutoRoute(page: ExportRoute.page),
     AutoRoute(page: PhoneSensorRoute.page),
+    AutoRoute(page: SystemEventsRoute.page),
   ];
 }

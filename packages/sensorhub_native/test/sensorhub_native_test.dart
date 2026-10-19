@@ -122,4 +122,120 @@ void main() {
       );
     });
   });
+
+  group('systemEvents', () {
+    const codec = JSONMessageCodec();
+
+    Future<void> nativeSends(Object message) => messenger.handlePlatformMessage(
+      SensorhubNative.systemEventsChannelName,
+      codec.encodeMessage(message),
+      (_) {},
+    );
+
+    test('maps native-initiated memory and lifecycle messages', () async {
+      final native = SensorhubNative();
+      final events = <SystemEvent>[];
+      final sub = native.systemEvents.listen(events.add);
+
+      await nativeSends({
+        'type': 'memory',
+        'level': 'critical',
+        'source': 'TRIM_MEMORY_RUNNING_LOW',
+        'timestamp': 1000,
+      });
+      await nativeSends({
+        'type': 'lifecycle',
+        'state': 'background',
+        'timestamp': 2000,
+      });
+      await nativeSends({'type': 'future_event', 'timestamp': 3000});
+      await sub.cancel();
+
+      expect(events, [
+        MemoryPressureEvent(
+          level: MemoryPressure.critical,
+          source: 'TRIM_MEMORY_RUNNING_LOW',
+          timestamp: DateTime.fromMillisecondsSinceEpoch(1000),
+        ),
+        LifecycleEvent(
+          foreground: false,
+          timestamp: DateTime.fromMillisecondsSinceEpoch(2000),
+        ),
+      ]);
+    });
+
+    test('drops messages after the last listener cancels', () async {
+      final native = SensorhubNative();
+      final events = <SystemEvent>[];
+      await native.systemEvents.listen(events.add).cancel();
+
+      await nativeSends({
+        'type': 'lifecycle',
+        'state': 'foreground',
+        'timestamp': 0,
+      });
+
+      expect(events, isEmpty);
+    });
+  });
+
+  group('ping', () {
+    const channels = {
+      PingCodec.json: BasicMessageChannel<Object?>(
+        SensorhubNative.pingJsonChannelName,
+        JSONMessageCodec(),
+      ),
+      PingCodec.standard: BasicMessageChannel<Object?>(
+        SensorhubNative.pingStandardChannelName,
+        StandardMessageCodec(),
+      ),
+    };
+
+    tearDown(() {
+      for (final channel in channels.values) {
+        messenger.setMockDecodedMessageHandler(channel, null);
+      }
+    });
+
+    for (final codec in PingCodec.values) {
+      test('${codec.name} returns the round trip of an echo', () async {
+        final received = <Object?>[];
+        messenger.setMockDecodedMessageHandler(channels[codec]!, (message) {
+          received.add(message);
+          return Future.value(message);
+        });
+
+        final latency = await SensorhubNative().ping(codec, payload: [1.5]);
+
+        expect(latency, isA<Duration>());
+        expect(received.single, {
+          'seq': 0,
+          'payload': [1.5],
+        });
+      });
+    }
+
+    test('throws unavailable without a native handler', () {
+      expect(
+        SensorhubNative().ping(PingCodec.json),
+        throwsA(
+          isA<NativeException>().having((e) => e.code, 'code', 'unavailable'),
+        ),
+      );
+    });
+
+    test('throws bad_reply when the echo does not match', () {
+      messenger.setMockDecodedMessageHandler(
+        channels[PingCodec.standard]!,
+        (_) => Future.value({'seq': 99}),
+      );
+
+      expect(
+        SensorhubNative().ping(PingCodec.standard),
+        throwsA(
+          isA<NativeException>().having((e) => e.code, 'code', 'bad_reply'),
+        ),
+      );
+    });
+  });
 }
