@@ -16,6 +16,8 @@ public class SensorhubNativePlugin: NSObject, FlutterPlugin {
     let accelerometer = FlutterEventChannel(name: "sensorhub_native/accelerometer", binaryMessenger: registrar.messenger())
     accelerometer.setStreamHandler(AccelerometerStreamHandler())
     PingHandlers.register(messenger: registrar.messenger())
+    DeviceInfoApiSetup.setUp(binaryMessenger: registrar.messenger(), api: DeviceInfoHandler())
+    SecureVaultApiSetup.setUp(binaryMessenger: registrar.messenger(), api: SecureVaultHandler())
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {

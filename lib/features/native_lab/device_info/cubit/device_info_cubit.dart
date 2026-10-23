@@ -10,15 +10,27 @@ class DeviceInfoCubit extends Cubit<DeviceInfoState> {
 
   DeviceInfoCubit(this._native) : super(const DeviceInfoState());
 
-  Future<void> load() async {
-    emit(const DeviceInfoState());
+  Future<void> load([
+    DeviceInfoSource source = DeviceInfoSource.methodChannel,
+  ]) async {
+    emit(DeviceInfoState(source: source));
     try {
-      final info = await _native.getDeviceInfo();
-      emit(DeviceInfoState(status: DeviceInfoStatus.loaded, info: info));
+      final info = switch (source) {
+        DeviceInfoSource.methodChannel => await _native.getDeviceInfo(),
+        DeviceInfoSource.pigeon => await _native.getDeviceInfoTyped(),
+      };
+      emit(
+        DeviceInfoState(
+          status: DeviceInfoStatus.loaded,
+          source: source,
+          info: info,
+        ),
+      );
     } on NativeException catch (e) {
       emit(
         DeviceInfoState(
           status: DeviceInfoStatus.error,
+          source: source,
           error: e.message ?? e.code,
         ),
       );

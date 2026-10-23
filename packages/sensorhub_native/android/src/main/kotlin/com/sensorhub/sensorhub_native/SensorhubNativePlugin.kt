@@ -28,6 +28,8 @@ class SensorhubNativePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     systemEvents = SystemEventsReporter(binding.binaryMessenger, binding.applicationContext)
     systemEvents.start()
     PingHandlers.register(binding.binaryMessenger)
+    DeviceInfoApi.setUp(binding.binaryMessenger, DeviceInfoHandler())
+    SecureVaultApi.setUp(binding.binaryMessenger, SecureVaultHandler(binding.applicationContext))
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
@@ -35,6 +37,8 @@ class SensorhubNativePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     accelerometerChannel.setStreamHandler(null)
     systemEvents.stop()
     PingHandlers.unregister(binding.binaryMessenger)
+    DeviceInfoApi.setUp(binding.binaryMessenger, null)
+    SecureVaultApi.setUp(binding.binaryMessenger, null)
   }
 
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {

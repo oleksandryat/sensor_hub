@@ -5,9 +5,11 @@ import 'package:sensorhub_native/sensorhub_native.dart';
 
 import '../../data/device_repository_impl.dart';
 import '../../data/mqtt/mqtt5_client_gateway.dart';
+import '../../data/native_credentials_vault.dart';
 import '../../domain/backoff_policy.dart';
 import '../../domain/command_dispatcher.dart';
 import '../../domain/connection_manager.dart';
+import '../../domain/credentials_vault.dart';
 import '../../domain/device_repository.dart';
 import '../../domain/mqtt_gateway.dart';
 import '../../domain/mqtt_topics.dart';
@@ -48,9 +50,12 @@ void configureDependencies() {
       () => MqttCommandDispatcher(getIt(), getIt()),
     )
     ..registerFactory<ConnectionCubit>(
-      () => ConnectionCubit(getIt(), _newClientId),
+      () => ConnectionCubit(getIt(), _newClientId, getIt()),
     )
     ..registerLazySingleton<SensorhubNative>(SensorhubNative.new)
+    ..registerLazySingleton<CredentialsVault>(
+      () => NativeCredentialsVault(SecureVault()),
+    )
     ..registerFactory<DeviceInfoCubit>(() => DeviceInfoCubit(getIt()))
     ..registerFactory<ExportCubit>(() => ExportCubit(getIt(), getIt()))
     ..registerLazySingleton<PhoneTelemetryPublisher>(

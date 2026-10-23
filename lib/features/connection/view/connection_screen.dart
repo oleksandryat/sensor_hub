@@ -16,7 +16,7 @@ class ConnectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => getIt<ConnectionCubit>(),
+      create: (_) => getIt<ConnectionCubit>()..loadSaved(),
       child: const ConnectionView(),
     );
   }
@@ -27,48 +27,65 @@ class ConnectionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<ConnectionCubit, ConnectionCubitState>(
-      listenWhen: (prev, curr) => prev.status != curr.status,
-      listener: (context, state) {
-        if (state.status == ConnectionStatus.connected) {
-          context.router.push(const DashboardRoute());
-        }
-      },
-      builder: (context, state) {
-        final cubit = context.read<ConnectionCubit>();
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Connection'),
-            actions: [
-              IconButton(
-                key: const Key('native_lab_button'),
-                tooltip: 'Native Lab',
-                icon: const Icon(Icons.science_outlined),
-                onPressed: () => context.router.push(const NativeLabRoute()),
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<ConnectionCubit, ConnectionCubitState>(
+          listenWhen: (prev, curr) => prev.status != curr.status,
+          listener: (context, state) {
+            if (state.status == ConnectionStatus.connected) {
+              context.router.push(const DashboardRoute());
+            }
+          },
+        ),
+        BlocListener<ConnectionCubit, ConnectionCubitState>(
+          listenWhen: (prev, curr) =>
+              curr.vaultError != null && prev.vaultError != curr.vaultError,
+          listener: (context, state) => ScaffoldMessenger.of(context)
+              .showSnackBar(
+                SnackBar(content: Text('Secure storage: ${state.vaultError}')),
               ),
-            ],
-          ),
-          body: SafeArea(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                Center(child: ConnectionStatusChip(status: state.status)),
-                const SizedBox(height: 24),
-                BrokerForm(
-                  status: state.status,
-                  onConnect: (host, port, username, password) => cubit.connect(
-                    host: host,
-                    port: port,
-                    username: username,
-                    password: password,
-                  ),
-                  onDisconnect: cubit.disconnect,
+        ),
+      ],
+      child: BlocBuilder<ConnectionCubit, ConnectionCubitState>(
+        builder: (context, state) {
+          final cubit = context.read<ConnectionCubit>();
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Connection'),
+              actions: [
+                IconButton(
+                  key: const Key('native_lab_button'),
+                  tooltip: 'Native Lab',
+                  icon: const Icon(Icons.science_outlined),
+                  onPressed: () => context.router.push(const NativeLabRoute()),
                 ),
               ],
             ),
-          ),
-        );
-      },
+            body: SafeArea(
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  Center(child: ConnectionStatusChip(status: state.status)),
+                  const SizedBox(height: 24),
+                  BrokerForm(
+                    status: state.status,
+                    saved: state.saved,
+                    onConnect: (host, port, username, password, remember) =>
+                        cubit.connect(
+                          host: host,
+                          port: port,
+                          username: username,
+                          password: password,
+                          remember: remember,
+                        ),
+                    onDisconnect: cubit.disconnect,
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

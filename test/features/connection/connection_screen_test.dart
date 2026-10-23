@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sensor_hub/core/router/app_router.dart';
 import 'package:sensor_hub/domain/connection_status.dart';
+import 'package:sensor_hub/domain/stored_credentials.dart';
 import 'package:sensor_hub/features/connection/cubit/connection_cubit.dart';
 import 'package:sensor_hub/features/connection/view/connection_screen.dart';
 
@@ -28,17 +29,21 @@ void main() {
         port: any(named: 'port'),
         username: any(named: 'username'),
         password: any(named: 'password'),
+        remember: any(named: 'remember'),
       ),
     ).thenAnswer((_) async {});
     when(() => cubit.disconnect()).thenAnswer((_) async {});
   });
 
-  Future<void> pump(WidgetTester tester, ConnectionStatus status) =>
-      tester.pumpView<ConnectionCubit, ConnectionCubitState>(
-        const ConnectionView(),
-        cubit: cubit,
-        state: ConnectionCubitState(status: status),
-      );
+  Future<void> pump(
+    WidgetTester tester,
+    ConnectionStatus status, {
+    StoredCredentials? saved,
+  }) => tester.pumpView<ConnectionCubit, ConnectionCubitState>(
+    const ConnectionView(),
+    cubit: cubit,
+    state: ConnectionCubitState(status: status, saved: saved),
+  );
 
   testWidgets('shows defaults and valid form connects', (tester) async {
     await pump(tester, ConnectionStatus.disconnected);
@@ -56,6 +61,41 @@ void main() {
         password: '',
       ),
     ).called(1);
+  });
+
+  testWidgets('remember checkbox is passed to connect', (tester) async {
+    await pump(tester, ConnectionStatus.disconnected);
+
+    await tester.tap(find.byKey(const Key('remember_checkbox')));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('connect_button')));
+    await tester.pump();
+
+    verify(
+      () => cubit.connect(
+        host: 'test.mosquitto.org',
+        port: 1883,
+        username: '',
+        password: '',
+        remember: true,
+      ),
+    ).called(1);
+  });
+
+  testWidgets('saved credentials prefill the form', (tester) async {
+    await pump(
+      tester,
+      ConnectionStatus.disconnected,
+      saved: const StoredCredentials(username: 'user', password: 'secret'),
+    );
+
+    expect(find.text('user'), findsOneWidget);
+    expect(
+      tester
+          .widget<CheckboxListTile>(find.byKey(const Key('remember_checkbox')))
+          .value,
+      isTrue,
+    );
   });
 
   testWidgets('invalid host and port block connect', (tester) async {

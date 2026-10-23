@@ -4,6 +4,14 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import 'src/messages.g.dart';
+import 'src/native_exception.dart';
+
+export 'src/messages.g.dart'
+    show DeviceInfoApi, DeviceInfoMessage, SecureVaultApi, VaultCredentials;
+export 'src/native_exception.dart' show NativeException;
+export 'src/secure_vault.dart';
+
 /// Static description of the device the app runs on.
 @immutable
 class NativeDeviceInfo {
@@ -45,23 +53,6 @@ class NativeDeviceInfo {
 /// iOS reports the real outcome after the user interacts with the sheet;
 /// Android only knows that the chooser was launched.
 enum ShareOutcome { completed, dismissed, launched }
-
-/// Error reported by native code, decoupled from [PlatformException].
-///
-/// Known codes: `no_activity`, `invalid_arguments`, `unavailable`.
-@immutable
-class NativeException implements Exception {
-  final String code;
-  final String? message;
-
-  const NativeException(this.code, [this.message]);
-
-  factory NativeException.fromPlatform(PlatformException e) =>
-      NativeException(e.code, e.message);
-
-  @override
-  String toString() => 'NativeException($code, $message)';
-}
 
 /// One accelerometer reading in m/s², Android axis convention.
 @immutable
@@ -184,6 +175,7 @@ class SensorhubNative {
 
   final MethodChannel _channel;
   final EventChannel _accelerometer;
+  final DeviceInfoApi _deviceInfoApi;
   final _systemEvents = const BasicMessageChannel<Object?>(
     systemEventsChannelName,
     JSONMessageCodec(),
@@ -211,10 +203,14 @@ class SensorhubNative {
         onCancel: () => _systemEvents.setMessageHandler(null),
       );
 
-  SensorhubNative({MethodChannel? channel, EventChannel? accelerometerChannel})
-    : _channel = channel ?? const MethodChannel(channelName),
-      _accelerometer =
-          accelerometerChannel ?? const EventChannel(accelerometerChannelName);
+  SensorhubNative({
+    MethodChannel? channel,
+    EventChannel? accelerometerChannel,
+    DeviceInfoApi? deviceInfoApi,
+  }) : _channel = channel ?? const MethodChannel(channelName),
+       _accelerometer =
+           accelerometerChannel ?? const EventChannel(accelerometerChannelName),
+       _deviceInfoApi = deviceInfoApi ?? DeviceInfoApi();
 
   /// Memory pressure and lifecycle events initiated by native code.
   ///
@@ -239,11 +235,22 @@ class SensorhubNative {
     return watch.elapsed;
   }
 
-  Future<NativeDeviceInfo> getDeviceInfo() => _guard(() async {
+  Future<NativeDeviceInfo> getDeviceInfo() => guardNative(() async {
     final map = await _channel.invokeMapMethod<Object?, Object?>(
       'getDeviceInfo',
     );
     return NativeDeviceInfo.fromMap(map!);
+  });
+
+  /// Same data as [getDeviceInfo], fetched through the typed Pigeon API.
+  Future<NativeDeviceInfo> getDeviceInfoTyped() => guardNative(() async {
+    final message = await _deviceInfoApi.getDeviceInfo();
+    return NativeDeviceInfo(
+      platform: message.platform,
+      manufacturer: message.manufacturer,
+      model: message.model,
+      osVersion: message.osVersion,
+    );
   });
 
   /// Live accelerometer readings; the sensor runs only while listened to.
@@ -265,20 +272,12 @@ class SensorhubNative {
         );
   }
 
-  Future<T> _guard<T>(Future<T> Function() call) async {
-    try {
-      return await call();
-    } on PlatformException catch (e) {
-      throw NativeException.fromPlatform(e);
-    }
-  }
-
   /// Opens the native share sheet with [text].
   ///
   /// Throws [NativeException] with code `no_activity` when there is no UI
   /// to present from, or `invalid_arguments` for an empty [text].
   Future<ShareOutcome> shareText(String text, {String? subject}) =>
-      _guard(() async {
+      guardNative(() async {
         final outcome = await _channel.invokeMethod<String>('shareText', {
           'text': text,
           'subject': subject,

@@ -15,6 +15,11 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$ConnectionCubitState {
   ConnectionStatus get status;
+  StoredCredentials? get saved;
+  String? get vaultError;
+
+  /// Attempt in flight; persisted only once it succeeds.
+  ({StoredCredentials credentials, bool remember})? get pending;
 
   /// Create a copy of ConnectionCubitState
   /// with the given fields replaced by the non-null parameter values.
@@ -33,19 +38,31 @@ mixin _$ConnectionCubitState {
         (other.runtimeType == runtimeType &&
             other is ConnectionCubitState &&
             (identical(other.status, _this.status) ||
-                other.status == _this.status));
+                other.status == _this.status) &&
+            (identical(other.saved, _this.saved) ||
+                other.saved == _this.saved) &&
+            (identical(other.vaultError, _this.vaultError) ||
+                other.vaultError == _this.vaultError) &&
+            (identical(other.pending, _this.pending) ||
+                other.pending == _this.pending));
   }
 
   @override
   int get hashCode {
     final _this = this as ConnectionCubitState;
-    return Object.hash(runtimeType, _this.status);
+    return Object.hash(
+      runtimeType,
+      _this.status,
+      _this.saved,
+      _this.vaultError,
+      _this.pending,
+    );
   }
 
   @override
   String toString() {
     final _this = this as ConnectionCubitState;
-    return 'ConnectionCubitState(status: ${_this.status})';
+    return 'ConnectionCubitState(status: ${_this.status}, saved: ${_this.saved}, vaultError: ${_this.vaultError}, pending: ${_this.pending})';
   }
 }
 
@@ -56,7 +73,14 @@ abstract mixin class $ConnectionCubitStateCopyWith<$Res> {
     $Res Function(ConnectionCubitState) _then,
   ) = _$ConnectionCubitStateCopyWithImpl;
   @useResult
-  $Res call({ConnectionStatus status});
+  $Res call({
+    ConnectionStatus status,
+    StoredCredentials? saved,
+    String? vaultError,
+    ({StoredCredentials credentials, bool remember})? pending,
+  });
+
+  $StoredCredentialsCopyWith<$Res>? get saved;
 }
 
 /// @nodoc
@@ -71,26 +95,70 @@ class _$ConnectionCubitStateCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({Object? status = null}) {
+  $Res call({
+    Object? status = null,
+    Object? saved = freezed,
+    Object? vaultError = freezed,
+    Object? pending = freezed,
+  }) {
     return _then(
       ConnectionCubitState(
         status: null == status
             ? _self.status
             : status // ignore: cast_nullable_to_non_nullable
                   as ConnectionStatus,
+        saved: freezed == saved
+            ? _self.saved
+            : saved // ignore: cast_nullable_to_non_nullable
+                  as StoredCredentials?,
+        vaultError: freezed == vaultError
+            ? _self.vaultError
+            : vaultError // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        pending: freezed == pending
+            ? _self.pending
+            : pending // ignore: cast_nullable_to_non_nullable
+                  as ({StoredCredentials credentials, bool remember})?,
       ),
     );
+  }
+
+  /// Create a copy of ConnectionCubitState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $StoredCredentialsCopyWith<$Res>? get saved {
+    if (_self.saved == null) {
+      return null;
+    }
+
+    return $StoredCredentialsCopyWith<$Res>(_self.saved!, (value) {
+      return _then(_self.copyWith(saved: value));
+    });
   }
 }
 
 /// @nodoc
 
 class _ConnectionCubitState implements ConnectionCubitState {
-  const _ConnectionCubitState({this.status = ConnectionStatus.disconnected});
+  const _ConnectionCubitState({
+    this.status = ConnectionStatus.disconnected,
+    this.saved,
+    this.vaultError,
+    this.pending,
+  });
 
   @override
   @JsonKey()
   final ConnectionStatus status;
+  @override
+  final StoredCredentials? saved;
+  @override
+  final String? vaultError;
+
+  /// Attempt in flight; persisted only once it succeeds.
+  @override
+  final ({StoredCredentials credentials, bool remember})? pending;
 
   /// Create a copy of ConnectionCubitState
   /// with the given fields replaced by the non-null parameter values.
@@ -108,17 +176,21 @@ class _ConnectionCubitState implements ConnectionCubitState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _ConnectionCubitState &&
-            (identical(other.status, status) || other.status == status));
+            (identical(other.status, status) || other.status == status) &&
+            (identical(other.saved, saved) || other.saved == saved) &&
+            (identical(other.vaultError, vaultError) ||
+                other.vaultError == vaultError) &&
+            (identical(other.pending, pending) || other.pending == pending));
   }
 
   @override
   int get hashCode {
-    return Object.hash(runtimeType, status);
+    return Object.hash(runtimeType, status, saved, vaultError, pending);
   }
 
   @override
   String toString() {
-    return 'ConnectionCubitState(status: $status)';
+    return 'ConnectionCubitState(status: $status, saved: $saved, vaultError: $vaultError, pending: $pending)';
   }
 }
 
@@ -131,7 +203,15 @@ abstract mixin class _$ConnectionCubitStateCopyWith<$Res>
   ) = __$ConnectionCubitStateCopyWithImpl;
   @override
   @useResult
-  $Res call({ConnectionStatus status});
+  $Res call({
+    ConnectionStatus status,
+    StoredCredentials? saved,
+    String? vaultError,
+    ({StoredCredentials credentials, bool remember})? pending,
+  });
+
+  @override
+  $StoredCredentialsCopyWith<$Res>? get saved;
 }
 
 /// @nodoc
@@ -146,14 +226,45 @@ class __$ConnectionCubitStateCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $Res call({Object? status = null}) {
+  $Res call({
+    Object? status = null,
+    Object? saved = freezed,
+    Object? vaultError = freezed,
+    Object? pending = freezed,
+  }) {
     return _then(
       _ConnectionCubitState(
         status: null == status
             ? _self.status
             : status // ignore: cast_nullable_to_non_nullable
                   as ConnectionStatus,
+        saved: freezed == saved
+            ? _self.saved
+            : saved // ignore: cast_nullable_to_non_nullable
+                  as StoredCredentials?,
+        vaultError: freezed == vaultError
+            ? _self.vaultError
+            : vaultError // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        pending: freezed == pending
+            ? _self.pending
+            : pending // ignore: cast_nullable_to_non_nullable
+                  as ({StoredCredentials credentials, bool remember})?,
       ),
     );
+  }
+
+  /// Create a copy of ConnectionCubitState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $StoredCredentialsCopyWith<$Res>? get saved {
+    if (_self.saved == null) {
+      return null;
+    }
+
+    return $StoredCredentialsCopyWith<$Res>(_self.saved!, (value) {
+      return _then(_self.copyWith(saved: value));
+    });
   }
 }

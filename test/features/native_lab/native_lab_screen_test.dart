@@ -30,7 +30,10 @@ class MockSystemEventsCubit extends MockCubit<SystemEventsState>
     implements SystemEventsCubit {}
 
 void main() {
-  setUpAll(() => registerFallbackValue(FakeRoute()));
+  setUpAll(() {
+    registerFallbackValue(FakeRoute());
+    registerFallbackValue(DeviceInfoSource.pigeon);
+  });
 
   testWidgets('lab list opens the demo routes', (tester) async {
     final router = MockStackRouter();
@@ -71,6 +74,22 @@ void main() {
 
     expect(find.text('Pixel 9'), findsOneWidget);
     expect(find.text('Android 16'), findsOneWidget);
+  });
+
+  testWidgets('device info source toggle reloads through Pigeon', (
+    tester,
+  ) async {
+    final cubit = MockDeviceInfoCubit();
+    when(() => cubit.load(any())).thenAnswer((_) async {});
+    await tester.pumpView<DeviceInfoCubit, DeviceInfoState>(
+      const DeviceInfoView(),
+      cubit: cubit,
+      state: const DeviceInfoState(status: DeviceInfoStatus.error, error: 'x'),
+    );
+
+    await tester.tap(find.text('Pigeon'));
+
+    verify(() => cubit.load(DeviceInfoSource.pigeon)).called(1);
   });
 
   testWidgets('device info shows the error', (tester) async {

@@ -1,22 +1,26 @@
 import 'package:flutter/material.dart';
 
 import '../../../domain/connection_status.dart';
+import '../../../domain/stored_credentials.dart';
 
 typedef BrokerFormSubmit = void Function(
   String host,
   int port,
   String username,
   String password,
+  bool remember,
 );
 
 class BrokerForm extends StatefulWidget {
   final ConnectionStatus status;
+  final StoredCredentials? saved;
   final BrokerFormSubmit onConnect;
   final VoidCallback onDisconnect;
 
   const BrokerForm({
     super.key,
     required this.status,
+    this.saved,
     required this.onConnect,
     required this.onDisconnect,
   });
@@ -31,6 +35,28 @@ class _BrokerFormState extends State<BrokerForm> {
   final _port = TextEditingController(text: '1883');
   final _username = TextEditingController();
   final _password = TextEditingController();
+  var _remember = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fillSaved();
+  }
+
+  @override
+  void didUpdateWidget(BrokerForm oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.saved != oldWidget.saved) _fillSaved();
+  }
+
+  // Saved credentials arrive asynchronously from the vault.
+  void _fillSaved() {
+    final saved = widget.saved;
+    if (saved == null) return;
+    _username.text = saved.username;
+    _password.text = saved.password;
+    _remember = true;
+  }
 
   @override
   void dispose() {
@@ -48,6 +74,7 @@ class _BrokerFormState extends State<BrokerForm> {
       int.parse(_port.text.trim()),
       _username.text,
       _password.text,
+      _remember,
     );
   }
 
@@ -104,7 +131,17 @@ class _BrokerFormState extends State<BrokerForm> {
             obscureText: true,
             decoration: const InputDecoration(labelText: 'Password'),
           ),
-          const SizedBox(height: 24),
+          CheckboxListTile(
+            key: const Key('remember_checkbox'),
+            value: _remember,
+            onChanged: isIdle
+                ? (value) => setState(() => _remember = value ?? false)
+                : null,
+            title: const Text('Remember credentials'),
+            controlAffinity: ListTileControlAffinity.leading,
+            contentPadding: EdgeInsets.zero,
+          ),
+          const SizedBox(height: 12),
           if (isIdle)
             FilledButton(
               key: const Key('connect_button'),

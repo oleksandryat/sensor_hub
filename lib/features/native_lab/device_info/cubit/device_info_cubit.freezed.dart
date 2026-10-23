@@ -15,6 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$DeviceInfoState {
   DeviceInfoStatus get status;
+  DeviceInfoSource get source;
   NativeDeviceInfo? get info;
   String? get error;
 
@@ -36,6 +37,8 @@ mixin _$DeviceInfoState {
             other is DeviceInfoState &&
             (identical(other.status, _this.status) ||
                 other.status == _this.status) &&
+            (identical(other.source, _this.source) ||
+                other.source == _this.source) &&
             (identical(other.info, _this.info) || other.info == _this.info) &&
             (identical(other.error, _this.error) ||
                 other.error == _this.error));
@@ -44,13 +47,19 @@ mixin _$DeviceInfoState {
   @override
   int get hashCode {
     final _this = this as DeviceInfoState;
-    return Object.hash(runtimeType, _this.status, _this.info, _this.error);
+    return Object.hash(
+      runtimeType,
+      _this.status,
+      _this.source,
+      _this.info,
+      _this.error,
+    );
   }
 
   @override
   String toString() {
     final _this = this as DeviceInfoState;
-    return 'DeviceInfoState(status: ${_this.status}, info: ${_this.info}, error: ${_this.error})';
+    return 'DeviceInfoState(status: ${_this.status}, source: ${_this.source}, info: ${_this.info}, error: ${_this.error})';
   }
 }
 
@@ -61,7 +70,12 @@ abstract mixin class $DeviceInfoStateCopyWith<$Res> {
     $Res Function(DeviceInfoState) _then,
   ) = _$DeviceInfoStateCopyWithImpl;
   @useResult
-  $Res call({DeviceInfoStatus status, NativeDeviceInfo? info, String? error});
+  $Res call({
+    DeviceInfoStatus status,
+    DeviceInfoSource source,
+    NativeDeviceInfo? info,
+    String? error,
+  });
 }
 
 /// @nodoc
@@ -78,6 +92,7 @@ class _$DeviceInfoStateCopyWithImpl<$Res>
   @override
   $Res call({
     Object? status = null,
+    Object? source = null,
     Object? info = freezed,
     Object? error = freezed,
   }) {
@@ -87,6 +102,10 @@ class _$DeviceInfoStateCopyWithImpl<$Res>
             ? _self.status
             : status // ignore: cast_nullable_to_non_nullable
                   as DeviceInfoStatus,
+        source: null == source
+            ? _self.source
+            : source // ignore: cast_nullable_to_non_nullable
+                  as DeviceInfoSource,
         info: freezed == info
             ? _self.info
             : info // ignore: cast_nullable_to_non_nullable
@@ -105,6 +124,7 @@ class _$DeviceInfoStateCopyWithImpl<$Res>
 class _DeviceInfoState implements DeviceInfoState {
   const _DeviceInfoState({
     this.status = DeviceInfoStatus.loading,
+    this.source = DeviceInfoSource.methodChannel,
     this.info,
     this.error,
   });
@@ -112,6 +132,9 @@ class _DeviceInfoState implements DeviceInfoState {
   @override
   @JsonKey()
   final DeviceInfoStatus status;
+  @override
+  @JsonKey()
+  final DeviceInfoSource source;
   @override
   final NativeDeviceInfo? info;
   @override
@@ -131,18 +154,19 @@ class _DeviceInfoState implements DeviceInfoState {
         (other.runtimeType == runtimeType &&
             other is _DeviceInfoState &&
             (identical(other.status, status) || other.status == status) &&
+            (identical(other.source, source) || other.source == source) &&
             (identical(other.info, info) || other.info == info) &&
             (identical(other.error, error) || other.error == error));
   }
 
   @override
   int get hashCode {
-    return Object.hash(runtimeType, status, info, error);
+    return Object.hash(runtimeType, status, source, info, error);
   }
 
   @override
   String toString() {
-    return 'DeviceInfoState(status: $status, info: $info, error: $error)';
+    return 'DeviceInfoState(status: $status, source: $source, info: $info, error: $error)';
   }
 }
 
@@ -155,7 +179,12 @@ abstract mixin class _$DeviceInfoStateCopyWith<$Res>
   ) = __$DeviceInfoStateCopyWithImpl;
   @override
   @useResult
-  $Res call({DeviceInfoStatus status, NativeDeviceInfo? info, String? error});
+  $Res call({
+    DeviceInfoStatus status,
+    DeviceInfoSource source,
+    NativeDeviceInfo? info,
+    String? error,
+  });
 }
 
 /// @nodoc
@@ -172,6 +201,7 @@ class __$DeviceInfoStateCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   $Res call({
     Object? status = null,
+    Object? source = null,
     Object? info = freezed,
     Object? error = freezed,
   }) {
@@ -181,6 +211,10 @@ class __$DeviceInfoStateCopyWithImpl<$Res>
             ? _self.status
             : status // ignore: cast_nullable_to_non_nullable
                   as DeviceInfoStatus,
+        source: null == source
+            ? _self.source
+            : source // ignore: cast_nullable_to_non_nullable
+                  as DeviceInfoSource,
         info: freezed == info
             ? _self.info
             : info // ignore: cast_nullable_to_non_nullable

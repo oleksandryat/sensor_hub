@@ -28,36 +28,61 @@ class DeviceInfoView extends StatelessWidget {
       body: BlocBuilder<DeviceInfoCubit, DeviceInfoState>(
         builder: (context, state) {
           final info = state.info;
-          return switch (state.status) {
-            DeviceInfoStatus.loading => const Center(
-              key: Key('device_info_loading'),
-              child: CircularProgressIndicator(),
-            ),
-            DeviceInfoStatus.error => Center(
-              key: const Key('device_info_error'),
-              child: Text(state.error ?? 'Unknown error'),
-            ),
-            DeviceInfoStatus.loaded => ListView(
-              children: [
-                ListTile(
-                  title: const Text('Platform'),
-                  subtitle: Text(info!.platform),
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: SegmentedButton<DeviceInfoSource>(
+                  key: const Key('device_info_source'),
+                  segments: const [
+                    ButtonSegment(
+                      value: DeviceInfoSource.methodChannel,
+                      label: Text('MethodChannel'),
+                    ),
+                    ButtonSegment(
+                      value: DeviceInfoSource.pigeon,
+                      label: Text('Pigeon'),
+                    ),
+                  ],
+                  selected: {state.source},
+                  onSelectionChanged: (selection) =>
+                      context.read<DeviceInfoCubit>().load(selection.first),
                 ),
-                ListTile(
-                  title: const Text('Manufacturer'),
-                  subtitle: Text(info.manufacturer),
-                ),
-                ListTile(
-                  title: const Text('Model'),
-                  subtitle: Text(info.model),
-                ),
-                ListTile(
-                  title: const Text('OS version'),
-                  subtitle: Text(info.osVersion),
-                ),
-              ],
-            ),
-          };
+              ),
+              Expanded(
+                child: switch (state.status) {
+                  DeviceInfoStatus.loading => const Center(
+                    key: Key('device_info_loading'),
+                    child: CircularProgressIndicator(),
+                  ),
+                  DeviceInfoStatus.error => Center(
+                    key: const Key('device_info_error'),
+                    child: Text(state.error ?? 'Unknown error'),
+                  ),
+                  DeviceInfoStatus.loaded => ListView(
+                    children: [
+                      ListTile(
+                        title: const Text('Platform'),
+                        subtitle: Text(info!.platform),
+                      ),
+                      ListTile(
+                        title: const Text('Manufacturer'),
+                        subtitle: Text(info.manufacturer),
+                      ),
+                      ListTile(
+                        title: const Text('Model'),
+                        subtitle: Text(info.model),
+                      ),
+                      ListTile(
+                        title: const Text('OS version'),
+                        subtitle: Text(info.osVersion),
+                      ),
+                    ],
+                  ),
+                },
+              ),
+            ],
+          );
         },
       ),
     );

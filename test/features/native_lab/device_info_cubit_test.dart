@@ -44,4 +44,38 @@ void main() {
       ),
     ],
   );
+
+  blocTest<DeviceInfoCubit, DeviceInfoState>(
+    'load with the pigeon source uses the typed API',
+    setUp: () =>
+        when(() => native.getDeviceInfoTyped()).thenAnswer((_) async => info),
+    build: () => DeviceInfoCubit(native),
+    act: (c) => c.load(DeviceInfoSource.pigeon),
+    expect: () => [
+      const DeviceInfoState(source: DeviceInfoSource.pigeon),
+      const DeviceInfoState(
+        status: DeviceInfoStatus.loaded,
+        source: DeviceInfoSource.pigeon,
+        info: info,
+      ),
+    ],
+    verify: (_) => verifyNever(() => native.getDeviceInfo()),
+  );
+
+  blocTest<DeviceInfoCubit, DeviceInfoState>(
+    'pigeon errors keep the selected source',
+    setUp: () =>
+        when(() => native.getDeviceInfoTyped())
+            .thenThrow(NativeException('boom')),
+    build: () => DeviceInfoCubit(native),
+    act: (c) => c.load(DeviceInfoSource.pigeon),
+    expect: () => [
+      const DeviceInfoState(source: DeviceInfoSource.pigeon),
+      const DeviceInfoState(
+        status: DeviceInfoStatus.error,
+        source: DeviceInfoSource.pigeon,
+        error: 'boom',
+      ),
+    ],
+  );
 }

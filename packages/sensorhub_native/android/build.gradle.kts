@@ -72,6 +72,8 @@ kotlin {
 }
 
 dependencies {
+    // Pigeon's generated `suspend` host APIs run on coroutines.
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.mockito:mockito-core:5.0.0")
 }
