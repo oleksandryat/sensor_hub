@@ -1,0 +1,15 @@
+# Run with `dart run ffigen --config ffigen.yaml`.
+name: SensorhubStatsBindings
+description: |
+  Bindings for `ios/sensorhub_stats/Sources/sensorhub_stats/include/sensorhub_stats.h`.
+
+  Regenerate bindings with `dart run ffigen --config ffigen.yaml`.
+output: 'lib/sensorhub_stats_bindings_generated.dart'
+headers:
+  entry-points:
+    - 'ios/sensorhub_stats/Sources/sensorhub_stats/include/sensorhub_stats.h'
+  include-directives:
+    - 'ios/sensorhub_stats/Sources/sensorhub_stats/include/sensorhub_stats.h'
+comments:
+  style: any
+  length: full

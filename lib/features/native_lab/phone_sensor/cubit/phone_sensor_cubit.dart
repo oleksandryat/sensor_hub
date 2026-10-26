@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sensorhub_native/sensorhub_native.dart';
 
+import '../../../../domain/anomaly_detector.dart';
 import '../../../../domain/connection_manager.dart';
 import '../../../../domain/connection_status.dart';
 import '../../../../domain/phone_telemetry_publisher.dart';
@@ -17,6 +18,7 @@ class PhoneSensorCubit extends Cubit<PhoneSensorState> {
 
   final SensorhubNative _native;
   final PhoneTelemetryPublisher _publisher;
+  final AnomalyDetector _detector;
   final Throttle _uiThrottle;
 
   StreamSubscription<AccelerometerSample>? _sensorSub;
@@ -25,6 +27,7 @@ class PhoneSensorCubit extends Cubit<PhoneSensorState> {
   PhoneSensorCubit(
     this._native,
     this._publisher,
+    this._detector,
     ConnectionManager connection,
     DateTime Function() now, {
     Duration uiInterval = const Duration(milliseconds: 100),
@@ -56,7 +59,18 @@ class PhoneSensorCubit extends Cubit<PhoneSensorState> {
   void _onSample(AccelerometerSample sample) {
     // MQTT has its own rate limit; the UI only needs a few frames per second.
     if (state.publishing) _publisher.offer(sample.magnitude);
-    if (_uiThrottle.tryAcquire()) emit(state.copyWith(sample: sample));
+    final reading = _detector.push(sample.magnitude);
+    final anomalies = state.anomalyCount + (reading.isAnomaly ? 1 : 0);
+    // Anomalies bypass the UI throttle so a spike is never dropped.
+    if (reading.isAnomaly || _uiThrottle.tryAcquire()) {
+      emit(
+        state.copyWith(
+          sample: sample,
+          reading: reading,
+          anomalyCount: anomalies,
+        ),
+      );
+    }
   }
 
   void _onError(Object error) {

@@ -64,6 +64,23 @@ class PhoneSensorView extends StatelessWidget {
                 ),
               ],
               const Divider(),
+              ListTile(
+                key: const Key('sensor_anomalies'),
+                leading: Icon(
+                  Icons.warning_amber_outlined,
+                  color: state.reading?.isAnomaly ?? false
+                      ? Theme.of(context).colorScheme.error
+                      : null,
+                ),
+                title: Text('Anomalies: ${state.anomalyCount}'),
+                subtitle: Text(
+                  state.reading == null
+                      ? 'Computed natively (C, FFI)'
+                      : 'z = ${state.reading!.zScore.toStringAsFixed(2)}, '
+                            'mean ${state.reading!.mean.toStringAsFixed(2)} m/s²',
+                ),
+              ),
+              const Divider(),
               SwitchListTile(
                 key: const Key('sensor_publish_switch'),
                 title: const Text('Publish over MQTT'),

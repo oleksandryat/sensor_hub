@@ -9,6 +9,8 @@ import 'package:sensor_hub/domain/phone_telemetry_publisher.dart';
 import 'package:sensor_hub/features/native_lab/phone_sensor/cubit/phone_sensor_cubit.dart';
 import 'package:sensorhub_native/sensorhub_native.dart';
 
+import '../../fakes/fake_anomaly_detector.dart';
+
 class MockNative extends Mock implements SensorhubNative {}
 
 class MockPublisher extends Mock implements PhoneTelemetryPublisher {}
@@ -19,6 +21,7 @@ void main() {
   late MockNative native;
   late MockPublisher publisher;
   late MockConnection connection;
+  late FakeAnomalyDetector detector;
   late StreamController<AccelerometerSample> samples;
   late StreamController<ConnectionStatus> status;
   late ConnectionStatus current;
@@ -35,6 +38,7 @@ void main() {
     native = MockNative();
     publisher = MockPublisher();
     connection = MockConnection();
+    detector = FakeAnomalyDetector(threshold: 15);
     samples = StreamController();
     status = StreamController.broadcast();
     current = ConnectionStatus.connected;
@@ -51,7 +55,7 @@ void main() {
   });
 
   PhoneSensorCubit build() =>
-      PhoneSensorCubit(native, publisher, connection, () => now);
+      PhoneSensorCubit(native, publisher, detector, connection, () => now);
 
   blocTest<PhoneSensorCubit, PhoneSensorState>(
     'start streams samples and throttles UI updates',
@@ -135,6 +139,37 @@ void main() {
           .having((s) => s.status, 's', PhoneSensorStatus.error)
           .having((s) => s.publishing, 'p', false)
           .having((s) => s.error, 'e', 'no sensor'),
+    ],
+  );
+
+  blocTest<PhoneSensorCubit, PhoneSensorState>(
+    'feeds every sample to the detector, even when the UI is throttled',
+    build: build,
+    act: (c) async {
+      c.start();
+      samples.add(sample(1));
+      samples.add(sample(2));
+      samples.add(sample(3));
+      await pumpEventQueue();
+    },
+    verify: (_) => expect(detector.pushed, [1, 2, 3]),
+  );
+
+  blocTest<PhoneSensorCubit, PhoneSensorState>(
+    'an anomaly bypasses the UI throttle and is counted',
+    build: build,
+    act: (c) async {
+      c.start();
+      samples.add(sample(1));
+      samples.add(sample(20));
+      await pumpEventQueue();
+    },
+    skip: 1,
+    expect: () => [
+      isA<PhoneSensorState>().having((s) => s.anomalyCount, 'count', 0),
+      isA<PhoneSensorState>()
+          .having((s) => s.anomalyCount, 'count', 1)
+          .having((s) => s.reading!.isAnomaly, 'anomaly', true),
     ],
   );
 
