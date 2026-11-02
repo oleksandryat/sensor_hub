@@ -19,6 +19,7 @@ import '../../domain/mqtt_topics.dart';
 import '../../domain/phone_telemetry_publisher.dart';
 import '../../features/connection/cubit/connection_cubit.dart';
 import '../../features/dashboard/cubit/dashboard_cubit.dart';
+import '../../features/native_lab/benchmark/cubit/benchmark_cubit.dart';
 import '../../features/native_lab/device_info/cubit/device_info_cubit.dart';
 import '../../features/native_lab/export/cubit/export_cubit.dart';
 import '../../features/native_lab/gauge/cubit/gauge_cubit.dart';
@@ -85,6 +86,24 @@ void configureDependencies() {
       ),
     )
     ..registerFactory<SystemEventsCubit>(() => SystemEventsCubit(getIt()))
+    ..registerFactory<BenchmarkCubit>(() {
+      final native = getIt<SensorhubNative>();
+      // Same work for every mechanism: stats of one value against this window.
+      final window = List.generate(
+        _anomalyWindow,
+        (i) => 9.8 + 0.5 * sin(i.toDouble()),
+      );
+      const value = 12.0;
+      final stats = StatsDetector(window: _anomalyWindow);
+      return BenchmarkCubit({
+        BenchmarkMechanism.methodChannel: () =>
+            native.analyzeWindow(window, value),
+        BenchmarkMechanism.pigeon: () =>
+            native.analyzeWindowTyped(window, value),
+        // Stateless, so C sees the identical window on every call.
+        BenchmarkMechanism.ffi: () => stats.analyze(window, value),
+      });
+    })
     ..registerFactory<GaugeCubit>(() => GaugeCubit(getIt(), DateTime.now))
     ..registerFactory<DashboardCubit>(
       () => DashboardCubit(getIt(), getIt(), getIt(), _newCmdId),

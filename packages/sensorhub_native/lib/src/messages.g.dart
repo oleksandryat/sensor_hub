@@ -202,6 +202,60 @@ class VaultCredentials {
   }
 }
 
+class WindowStatsMessage {
+  WindowStatsMessage({
+    required this.mean,
+    required this.stdDev,
+    required this.zScore,
+  });
+
+  double mean;
+
+  double stdDev;
+
+  double zScore;
+
+  List<Object?> _toList() {
+    return <Object?>[mean, stdDev, zScore];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static WindowStatsMessage decode(Object result) {
+    result as List<Object?>;
+    return WindowStatsMessage(
+      mean: result[0]! as double,
+      stdDev: result[1]! as double,
+      zScore: result[2]! as double,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! WindowStatsMessage || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(mean, other.mean) &&
+        _deepEquals(stdDev, other.stdDev) &&
+        _deepEquals(zScore, other.zScore);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'WindowStatsMessage(mean: $mean, stdDev: $stdDev, zScore: $zScore)';
+  }
+}
+
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
   @override
@@ -215,6 +269,9 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is VaultCredentials) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
+    } else if (value is WindowStatsMessage) {
+      buffer.putUint8(131);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -227,6 +284,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return DeviceInfoMessage.decode(readValue(buffer)!);
       case 130:
         return VaultCredentials.decode(readValue(buffer)!);
+      case 131:
+        return WindowStatsMessage.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -268,6 +327,49 @@ class DeviceInfoApi {
       isNullValid: false,
     );
     return pigeonVar_replyValue! as DeviceInfoMessage;
+  }
+}
+
+/// Same computation as the `analyzeWindow` MethodChannel call, for the benchmark.
+class WindowStatsApi {
+  /// Constructor for [WindowStatsApi]. The [binaryMessenger] named argument is
+  /// available for dependency injection. If it is left null, the default
+  /// BinaryMessenger will be used which routes to the host platform.
+  WindowStatsApi({
+    BinaryMessenger? binaryMessenger,
+    String messageChannelSuffix = '',
+  }) : pigeonVar_binaryMessenger = binaryMessenger,
+       pigeonVar_messageChannelSuffix = messageChannelSuffix.isNotEmpty
+           ? '.$messageChannelSuffix'
+           : '';
+
+  final BinaryMessenger? pigeonVar_binaryMessenger;
+  static const MessageCodec<Object?> pigeonChannelCodec = _PigeonCodec();
+
+  final String pigeonVar_messageChannelSuffix;
+
+  Future<WindowStatsMessage> analyzeWindow(
+    List<double> window,
+    double value,
+  ) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.sensorhub_native.WindowStatsApi.analyzeWindow$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[window, value],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as WindowStatsMessage;
   }
 }
 

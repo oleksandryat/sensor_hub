@@ -69,15 +69,27 @@ class StatsDetector {
   }
 
   StatsReading push(double value) {
+    final reading = analyze(_history, value);
+
+    // After the call, so C compares `value` with the samples before it.
+    _history.add(value);
+    if (_history.length > window) {
+      _history.removeAt(0);
+    }
+    return reading;
+  }
+
+  /// Compares [value] with [samples] without touching the history.
+  StatsReading analyze(List<double> samples, double value) {
     // `using` frees everything allocated inside the block when it ends.
-    final reading = using((arena) {
-      final samples = arena<Double>(_history.length + 1);
-      samples.asTypedList(_history.length).setAll(0, _history);
+    return using((arena) {
+      final native = arena<Double>(samples.length + 1);
+      native.asTypedList(samples.length).setAll(0, samples);
       final result = arena<sh_stats_result>();
 
       final code = _bindings.sh_stats_analyze(
-        samples,
-        _history.length,
+        native,
+        samples.length,
         value,
         zThreshold,
         result,
@@ -92,13 +104,6 @@ class StatsDetector {
         isAnomaly: result.ref.is_anomaly != 0,
       );
     });
-
-    // After the call, so C compares `value` with the samples before it.
-    _history.add(value);
-    if (_history.length > window) {
-      _history.removeAt(0);
-    }
-    return reading;
   }
 
   void reset() {

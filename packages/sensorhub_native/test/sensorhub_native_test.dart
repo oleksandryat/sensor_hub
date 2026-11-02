@@ -238,4 +238,17 @@ void main() {
       );
     });
   });
+
+  test('analyzeWindow sends the window and maps the result', () async {
+    mockHandler((_) async => {'mean': 1.0, 'stdDev': 0.5, 'zScore': 2.0});
+
+    final stats = await SensorhubNative().analyzeWindow([1, 2, 3], 4);
+
+    expect(calls.single.method, 'analyzeWindow');
+    expect(calls.single.arguments, {
+      'window': [1.0, 2.0, 3.0],
+      'value': 4.0,
+    });
+    expect(stats, const NativeWindowStats(mean: 1, stdDev: 0.5, zScore: 2));
+  });
 }

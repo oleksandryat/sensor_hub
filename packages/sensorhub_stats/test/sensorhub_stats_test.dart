@@ -45,6 +45,17 @@ void main() {
     expect(r.stdDev, closeTo(0.5, 1e-9));
   });
 
+  test('analyze compares with the given samples and keeps no history', () {
+    final d = detector();
+
+    final first = d.analyze([1, 2], 10);
+    final second = d.analyze([1, 2], 10);
+
+    expect(first.mean, closeTo(1.5, 1e-9));
+    expect(second.mean, first.mean);
+    expect(d.push(5).mean, 0);
+  });
+
   test('no z-score while warming up', () {
     final d = detector();
 

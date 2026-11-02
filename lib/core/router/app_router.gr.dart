@@ -11,6 +11,22 @@
 part of 'app_router.dart';
 
 /// generated route for
+/// [BenchmarkScreen]
+class BenchmarkRoute extends PageRouteInfo<void> {
+  const BenchmarkRoute({List<PageRouteInfo>? children})
+    : super(BenchmarkRoute.name, initialChildren: children);
+
+  static const String name = 'BenchmarkRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const BenchmarkScreen();
+    },
+  );
+}
+
+/// generated route for
 /// [ConnectionScreen]
 class ConnectionRoute extends PageRouteInfo<void> {
   const ConnectionRoute({List<PageRouteInfo>? children})

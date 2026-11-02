@@ -287,6 +287,51 @@ data class VaultCredentials (
     return "VaultCredentials(username=$username, password=$password)"
   }
 }
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class WindowStatsMessage (
+  val mean: Double,
+  val stdDev: Double,
+  val zScore: Double
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): WindowStatsMessage {
+      val mean = pigeonVar_list[0] as Double
+      val stdDev = pigeonVar_list[1] as Double
+      val zScore = pigeonVar_list[2] as Double
+      return WindowStatsMessage(mean, stdDev, zScore)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      mean,
+      stdDev,
+      zScore,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as WindowStatsMessage
+    return MessagesPigeonUtils.deepEquals(this.mean, other.mean) && MessagesPigeonUtils.deepEquals(this.stdDev, other.stdDev) && MessagesPigeonUtils.deepEquals(this.zScore, other.zScore)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.mean)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.stdDev)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.zScore)
+    return result
+  }
+  override fun toString(): String {
+    return "WindowStatsMessage(mean=$mean, stdDev=$stdDev, zScore=$zScore)"
+  }
+}
 private open class MessagesPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -300,6 +345,11 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
           VaultCredentials.fromList(it)
         }
       }
+      131.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          WindowStatsMessage.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -311,6 +361,10 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
       }
       is VaultCredentials -> {
         stream.write(130)
+        writeValue(stream, value.toList())
+      }
+      is WindowStatsMessage -> {
+        stream.write(131)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -342,6 +396,44 @@ interface DeviceInfoApi {
           channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
               listOf(api.getDeviceInfo())
+            } catch (exception: Throwable) {
+              MessagesPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+    }
+  }
+}
+/**
+ * Same computation as the `analyzeWindow` MethodChannel call, for the benchmark.
+ *
+ * Generated interface from Pigeon that represents a handler of messages from Flutter.
+ */
+interface WindowStatsApi {
+  fun analyzeWindow(window: List<Double>, value: Double): WindowStatsMessage
+
+  companion object {
+    /** The codec used by WindowStatsApi. */
+    val codec: MessageCodec<Any?> by lazy {
+      MessagesPigeonCodec()
+    }
+    /** Sets up an instance of `WindowStatsApi` to handle messages through the `binaryMessenger`. */
+    @JvmOverloads
+    fun setUp(binaryMessenger: BinaryMessenger, api: WindowStatsApi?, messageChannelSuffix: String = "") {
+      val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.sensorhub_native.WindowStatsApi.analyzeWindow$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val windowArg = args[0] as List<Double>
+            val valueArg = args[1] as Double
+            val wrapped: List<Any?> = try {
+              listOf(api.analyzeWindow(windowArg, valueArg))
             } catch (exception: Throwable) {
               MessagesPigeonUtils.wrapError(exception)
             }

@@ -8,7 +8,13 @@ import 'src/messages.g.dart';
 import 'src/native_exception.dart';
 
 export 'src/messages.g.dart'
-    show DeviceInfoApi, DeviceInfoMessage, SecureVaultApi, VaultCredentials;
+    show
+        DeviceInfoApi,
+        DeviceInfoMessage,
+        SecureVaultApi,
+        VaultCredentials,
+        WindowStatsApi,
+        WindowStatsMessage;
 export 'src/native_exception.dart' show NativeException;
 export 'src/native_gauge.dart';
 export 'src/secure_vault.dart';
@@ -47,6 +53,30 @@ class NativeDeviceInfo {
 
   @override
   int get hashCode => Object.hash(platform, manufacturer, model, osVersion);
+}
+
+/// Statistics of one value against a window of earlier values.
+@immutable
+class NativeWindowStats {
+  final double mean;
+  final double stdDev;
+  final double zScore;
+
+  const NativeWindowStats({
+    required this.mean,
+    required this.stdDev,
+    required this.zScore,
+  });
+
+  @override
+  bool operator ==(Object other) =>
+      other is NativeWindowStats &&
+      other.mean == mean &&
+      other.stdDev == stdDev &&
+      other.zScore == zScore;
+
+  @override
+  int get hashCode => Object.hash(mean, stdDev, zScore);
 }
 
 /// What is known about the share sheet once the native call returns.
@@ -177,6 +207,7 @@ class SensorhubNative {
   final MethodChannel _channel;
   final EventChannel _accelerometer;
   final DeviceInfoApi _deviceInfoApi;
+  final WindowStatsApi _windowStatsApi;
   final _systemEvents = const BasicMessageChannel<Object?>(
     systemEventsChannelName,
     JSONMessageCodec(),
@@ -208,10 +239,12 @@ class SensorhubNative {
     MethodChannel? channel,
     EventChannel? accelerometerChannel,
     DeviceInfoApi? deviceInfoApi,
+    WindowStatsApi? windowStatsApi,
   }) : _channel = channel ?? const MethodChannel(channelName),
        _accelerometer =
            accelerometerChannel ?? const EventChannel(accelerometerChannelName),
-       _deviceInfoApi = deviceInfoApi ?? DeviceInfoApi();
+       _deviceInfoApi = deviceInfoApi ?? DeviceInfoApi(),
+       _windowStatsApi = windowStatsApi ?? WindowStatsApi();
 
   /// Memory pressure and lifecycle events initiated by native code.
   ///
@@ -252,6 +285,29 @@ class SensorhubNative {
       model: message.model,
       osVersion: message.osVersion,
     );
+  });
+
+  /// Statistics of [value] against [window], computed natively over a channel.
+  Future<NativeWindowStats> analyzeWindow(List<double> window, double value) =>
+      guardNative(() async {
+        final map = await _channel.invokeMapMethod<String, double>(
+          'analyzeWindow',
+          {'window': window, 'value': value},
+        );
+        return NativeWindowStats(
+          mean: map!['mean']!,
+          stdDev: map['stdDev']!,
+          zScore: map['zScore']!,
+        );
+      });
+
+  /// Same computation as [analyzeWindow], through the typed Pigeon API.
+  Future<NativeWindowStats> analyzeWindowTyped(
+    List<double> window,
+    double value,
+  ) => guardNative(() async {
+    final r = await _windowStatsApi.analyzeWindow(window, value);
+    return NativeWindowStats(mean: r.mean, stdDev: r.stdDev, zScore: r.zScore);
   });
 
   /// Live accelerometer readings; the sensor runs only while listened to.

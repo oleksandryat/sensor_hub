@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 
 import '../../features/connection/view/connection_screen.dart';
 import '../../features/dashboard/view/dashboard_screen.dart';
+import '../../features/native_lab/benchmark/view/benchmark_screen.dart';
 import '../../features/native_lab/device_info/view/device_info_screen.dart';
 import '../../features/native_lab/export/view/export_screen.dart';
 import '../../features/native_lab/gauge/view/gauge_screen.dart';
@@ -23,5 +24,6 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: PhoneSensorRoute.page),
     AutoRoute(page: SystemEventsRoute.page),
     AutoRoute(page: GaugeRoute.page),
+    AutoRoute(page: BenchmarkRoute.page),
   ];
 }

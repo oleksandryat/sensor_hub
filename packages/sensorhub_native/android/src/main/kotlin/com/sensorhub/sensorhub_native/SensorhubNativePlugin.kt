@@ -29,6 +29,7 @@ class SensorhubNativePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     systemEvents.start()
     PingHandlers.register(binding.binaryMessenger)
     DeviceInfoApi.setUp(binding.binaryMessenger, DeviceInfoHandler())
+    WindowStatsApi.setUp(binding.binaryMessenger, WindowStatsHandler())
     SecureVaultApi.setUp(binding.binaryMessenger, SecureVaultHandler(binding.applicationContext))
     binding.platformViewRegistry.registerViewFactory("sensorhub_native/gauge", GaugeViewFactory(binding.binaryMessenger))
   }
@@ -39,6 +40,7 @@ class SensorhubNativePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     systemEvents.stop()
     PingHandlers.unregister(binding.binaryMessenger)
     DeviceInfoApi.setUp(binding.binaryMessenger, null)
+    WindowStatsApi.setUp(binding.binaryMessenger, null)
     SecureVaultApi.setUp(binding.binaryMessenger, null)
   }
 
@@ -73,6 +75,16 @@ class SensorhubNativePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
         )
       )
       "shareText" -> shareText(call, result)
+      "analyzeWindow" -> {
+        val window = call.argument<List<Double>>("window")
+        val value = call.argument<Double>("value")
+        if (window == null || value == null) {
+          result.error("invalid_arguments", "window and value are required", null)
+        } else {
+          val (mean, stdDev, z) = WindowStats.analyze(window, value)
+          result.success(mapOf("mean" to mean, "stdDev" to stdDev, "zScore" to z))
+        }
+      }
       else -> result.notImplemented()
     }
   }

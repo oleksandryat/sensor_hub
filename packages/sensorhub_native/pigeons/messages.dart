@@ -38,6 +38,24 @@ abstract class DeviceInfoApi {
   DeviceInfoMessage getDeviceInfo();
 }
 
+class WindowStatsMessage {
+  WindowStatsMessage({
+    required this.mean,
+    required this.stdDev,
+    required this.zScore,
+  });
+
+  double mean;
+  double stdDev;
+  double zScore;
+}
+
+/// Same computation as the `analyzeWindow` MethodChannel call, for the benchmark.
+@HostApi()
+abstract class WindowStatsApi {
+  WindowStatsMessage analyzeWindow(List<double> window, double value);
+}
+
 /// Credentials kept in the Android Keystore / iOS Keychain.
 ///
 /// Errors: `vault_corrupted` (entry cannot be decrypted and was wiped),

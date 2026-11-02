@@ -50,6 +50,13 @@ class NativeLabScreen extends StatelessWidget {
             subtitle: 'Platform View + per-view channel',
             onTap: () => router.push(const GaugeRoute()),
           ),
+          DemoTile(
+            tileKey: const Key('demo_benchmark'),
+            icon: Icons.timer,
+            title: 'Call latency',
+            subtitle: 'MethodChannel vs Pigeon vs FFI',
+            onTap: () => router.push(const BenchmarkRoute()),
+          ),
         ],
       ),
     );

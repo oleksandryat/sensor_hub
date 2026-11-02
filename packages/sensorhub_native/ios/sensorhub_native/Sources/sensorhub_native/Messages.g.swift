@@ -274,6 +274,51 @@ struct VaultCredentials: Hashable, CustomStringConvertible {
   }
 }
 
+/// Generated class from Pigeon that represents data sent in messages.
+struct WindowStatsMessage: Hashable, CustomStringConvertible {
+  var mean: Double
+  var stdDev: Double
+  var zScore: Double
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> WindowStatsMessage? {
+    let mean = pigeonVar_list[0] as! Double
+    let stdDev = pigeonVar_list[1] as! Double
+    let zScore = pigeonVar_list[2] as! Double
+
+    return WindowStatsMessage(
+      mean: mean,
+      stdDev: stdDev,
+      zScore: zScore
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      mean,
+      stdDev,
+      zScore,
+    ]
+  }
+  static func == (lhs: WindowStatsMessage, rhs: WindowStatsMessage) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return MessagesPigeonInternal.deepEquals(lhs.mean, rhs.mean) && MessagesPigeonInternal.deepEquals(lhs.stdDev, rhs.stdDev) && MessagesPigeonInternal.deepEquals(lhs.zScore, rhs.zScore)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("WindowStatsMessage")
+    MessagesPigeonInternal.deepHash(value: mean, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: stdDev, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: zScore, hasher: &hasher)
+  }
+
+  public var description: String {
+    return "WindowStatsMessage(mean: \(String(describing: mean)), stdDev: \(String(describing: stdDev)), zScore: \(String(describing: zScore)))"
+  }
+}
+
 private class MessagesPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -281,6 +326,8 @@ private class MessagesPigeonCodecReader: FlutterStandardReader {
       return DeviceInfoMessage.fromList(self.readValue() as! [Any?])
     case 130:
       return VaultCredentials.fromList(self.readValue() as! [Any?])
+    case 131:
+      return WindowStatsMessage.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -294,6 +341,9 @@ private class MessagesPigeonCodecWriter: FlutterStandardWriter {
       super.writeValue(value.toList())
     } else if let value = value as? VaultCredentials {
       super.writeByte(130)
+      super.writeValue(value.toList())
+    } else if let value = value as? WindowStatsMessage {
+      super.writeByte(131)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -341,6 +391,37 @@ class DeviceInfoApiSetup {
       }
     } else {
       getDeviceInfoChannel.setMessageHandler(nil)
+    }
+  }
+}
+/// Same computation as the `analyzeWindow` MethodChannel call, for the benchmark.
+///
+/// Generated protocol from Pigeon that represents a handler of messages from Flutter.
+protocol WindowStatsApi {
+  func analyzeWindow(window: [Double], value: Double) throws -> WindowStatsMessage
+}
+
+/// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
+class WindowStatsApiSetup {
+  static var codec: FlutterStandardMessageCodec { MessagesPigeonCodec.shared }
+  /// Sets up an instance of `WindowStatsApi` to handle messages through the `binaryMessenger`.
+  static func setUp(binaryMessenger: FlutterBinaryMessenger, api: WindowStatsApi?, messageChannelSuffix: String = "") {
+    let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+    let analyzeWindowChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.sensorhub_native.WindowStatsApi.analyzeWindow\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      analyzeWindowChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let windowArg = args[0] as! [Double]
+        let valueArg = args[1] as! Double
+        do {
+          let result = try api.analyzeWindow(window: windowArg, value: valueArg)
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      analyzeWindowChannel.setMessageHandler(nil)
     }
   }
 }

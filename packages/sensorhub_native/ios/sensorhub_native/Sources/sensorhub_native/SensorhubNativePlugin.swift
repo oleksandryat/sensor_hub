@@ -17,6 +17,7 @@ public class SensorhubNativePlugin: NSObject, FlutterPlugin {
     accelerometer.setStreamHandler(AccelerometerStreamHandler())
     PingHandlers.register(messenger: registrar.messenger())
     DeviceInfoApiSetup.setUp(binaryMessenger: registrar.messenger(), api: DeviceInfoHandler())
+    WindowStatsApiSetup.setUp(binaryMessenger: registrar.messenger(), api: WindowStatsHandler())
     SecureVaultApiSetup.setUp(binaryMessenger: registrar.messenger(), api: SecureVaultHandler())
     registrar.register(GaugeViewFactory(messenger: registrar.messenger()), withId: "sensorhub_native/gauge")
   }
@@ -33,6 +34,14 @@ public class SensorhubNativePlugin: NSObject, FlutterPlugin {
       ])
     case "shareText":
       shareText(call, result: result)
+    case "analyzeWindow":
+      let args = call.arguments as? [String: Any]
+      guard let window = args?["window"] as? [Double], let value = args?["value"] as? Double else {
+        result(FlutterError(code: "invalid_arguments", message: "window and value are required", details: nil))
+        return
+      }
+      let r = WindowStats.analyze(window: window, value: value)
+      result(["mean": r.mean, "stdDev": r.stdDev, "zScore": r.zScore])
     default:
       result(FlutterMethodNotImplemented)
     }

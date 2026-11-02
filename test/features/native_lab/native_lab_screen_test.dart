@@ -6,6 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sensor_hub/core/router/app_router.dart';
 import 'package:sensor_hub/domain/latency_stats.dart';
+import 'package:sensor_hub/features/native_lab/benchmark/cubit/benchmark_cubit.dart';
+import 'package:sensor_hub/features/native_lab/benchmark/view/benchmark_screen.dart';
 import 'package:sensor_hub/features/native_lab/device_info/cubit/device_info_cubit.dart';
 import 'package:sensor_hub/features/native_lab/device_info/view/device_info_screen.dart';
 import 'package:sensor_hub/features/native_lab/gauge/cubit/gauge_cubit.dart';
@@ -28,6 +30,9 @@ class MockDeviceInfoCubit extends MockCubit<DeviceInfoState>
 
 class MockPhoneSensorCubit extends MockCubit<PhoneSensorState>
     implements PhoneSensorCubit {}
+
+class MockBenchmarkCubit extends MockCubit<BenchmarkState>
+    implements BenchmarkCubit {}
 
 class MockGaugeCubit extends MockCubit<GaugeState> implements GaugeCubit {}
 
@@ -56,12 +61,14 @@ void main() {
     await tester.tap(find.byKey(const Key('demo_phone_sensor')));
     await tester.tap(find.byKey(const Key('demo_system_events')));
     await tester.tap(find.byKey(const Key('demo_gauge')));
+    await tester.tap(find.byKey(const Key('demo_benchmark')));
 
     verify(() => router.push(const DeviceInfoRoute())).called(1);
     verify(() => router.push(const ExportRoute())).called(1);
     verify(() => router.push(const PhoneSensorRoute())).called(1);
     verify(() => router.push(const SystemEventsRoute())).called(1);
     verify(() => router.push(const GaugeRoute())).called(1);
+    verify(() => router.push(const BenchmarkRoute())).called(1);
   });
 
   testWidgets('device info shows loaded values', (tester) async {
@@ -294,6 +301,92 @@ void main() {
 
       expect(find.byKey(const Key('gauge_error')), findsOneWidget);
       expect(find.text('no sensor'), findsOneWidget);
+    });
+  });
+
+  group('benchmark', () {
+    late MockBenchmarkCubit cubit;
+
+    setUp(() {
+      cubit = MockBenchmarkCubit();
+      when(() => cubit.callCount).thenReturn(1000);
+      when(cubit.run).thenAnswer((_) async {});
+    });
+
+    Future<void> pump(WidgetTester tester, BenchmarkState state) =>
+        tester.pumpView<BenchmarkCubit, BenchmarkState>(
+          const BenchmarkView(),
+          cubit: cubit,
+          state: state,
+        );
+
+    testWidgets('run starts the benchmark', (tester) async {
+      await pump(tester, const BenchmarkState());
+
+      await tester.tap(find.byKey(const Key('benchmark_run')));
+
+      verify(cubit.run).called(1);
+    });
+
+    testWidgets('disables run while running', (tester) async {
+      await pump(tester, const BenchmarkState(status: BenchmarkStatus.running));
+
+      expect(
+        tester
+            .widget<FilledButton>(find.byKey(const Key('benchmark_run')))
+            .onPressed,
+        isNull,
+      );
+    });
+
+    testWidgets('shows median and p95 per mechanism', (tester) async {
+      await pump(
+        tester,
+        BenchmarkState(
+          status: BenchmarkStatus.done,
+          results: [
+            BenchmarkResult(
+              mechanism: BenchmarkMechanism.ffi,
+              stats: LatencyStats.of([
+                const Duration(microseconds: 2),
+                const Duration(microseconds: 4),
+              ]),
+            ),
+          ],
+        ),
+      );
+
+      expect(find.byKey(const Key('benchmark_ffi')), findsOneWidget);
+      expect(find.text('2 / 4 µs'), findsOneWidget);
+      expect(find.text('C, synchronous · fastest'), findsOneWidget);
+    });
+
+    testWidgets('compares slower mechanisms with the fastest', (tester) async {
+      BenchmarkResult result(BenchmarkMechanism m, int us) => BenchmarkResult(
+        mechanism: m,
+        stats: LatencyStats.of([Duration(microseconds: us)]),
+      );
+      await pump(
+        tester,
+        BenchmarkState(
+          status: BenchmarkStatus.done,
+          results: [
+            result(BenchmarkMechanism.methodChannel, 100),
+            result(BenchmarkMechanism.ffi, 4),
+          ],
+        ),
+      );
+
+      expect(find.text('Kotlin / Swift · ×25.0 vs fastest'), findsOneWidget);
+    });
+
+    testWidgets('shows the error', (tester) async {
+      await pump(
+        tester,
+        const BenchmarkState(status: BenchmarkStatus.error, error: 'boom'),
+      );
+
+      expect(find.byKey(const Key('benchmark_error')), findsOneWidget);
     });
   });
 }
