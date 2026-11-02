@@ -75,6 +75,22 @@ class ExportRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [GaugeScreen]
+class GaugeRoute extends PageRouteInfo<void> {
+  const GaugeRoute({List<PageRouteInfo>? children})
+    : super(GaugeRoute.name, initialChildren: children);
+
+  static const String name = 'GaugeRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const GaugeScreen();
+    },
+  );
+}
+
+/// generated route for
 /// [NativeLabScreen]
 class NativeLabRoute extends PageRouteInfo<void> {
   const NativeLabRoute({List<PageRouteInfo>? children})

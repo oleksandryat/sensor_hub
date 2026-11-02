@@ -1,12 +1,15 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:sensor_hub/core/router/app_router.dart';
 import 'package:sensor_hub/domain/latency_stats.dart';
 import 'package:sensor_hub/features/native_lab/device_info/cubit/device_info_cubit.dart';
 import 'package:sensor_hub/features/native_lab/device_info/view/device_info_screen.dart';
+import 'package:sensor_hub/features/native_lab/gauge/cubit/gauge_cubit.dart';
+import 'package:sensor_hub/features/native_lab/gauge/view/gauge_screen.dart';
 import 'package:sensor_hub/features/native_lab/phone_sensor/cubit/phone_sensor_cubit.dart';
 import 'package:sensor_hub/features/native_lab/phone_sensor/view/phone_sensor_screen.dart';
 import 'package:sensor_hub/features/native_lab/system_events/cubit/system_events_cubit.dart';
@@ -25,6 +28,8 @@ class MockDeviceInfoCubit extends MockCubit<DeviceInfoState>
 
 class MockPhoneSensorCubit extends MockCubit<PhoneSensorState>
     implements PhoneSensorCubit {}
+
+class MockGaugeCubit extends MockCubit<GaugeState> implements GaugeCubit {}
 
 class MockSystemEventsCubit extends MockCubit<SystemEventsState>
     implements SystemEventsCubit {}
@@ -50,11 +55,13 @@ void main() {
     await tester.tap(find.byKey(const Key('demo_export')));
     await tester.tap(find.byKey(const Key('demo_phone_sensor')));
     await tester.tap(find.byKey(const Key('demo_system_events')));
+    await tester.tap(find.byKey(const Key('demo_gauge')));
 
     verify(() => router.push(const DeviceInfoRoute())).called(1);
     verify(() => router.push(const ExportRoute())).called(1);
     verify(() => router.push(const PhoneSensorRoute())).called(1);
     verify(() => router.push(const SystemEventsRoute())).called(1);
+    verify(() => router.push(const GaugeRoute())).called(1);
   });
 
   testWidgets('device info shows loaded values', (tester) async {
@@ -259,6 +266,34 @@ void main() {
 
       expect(find.byKey(const Key('ping_error')), findsOneWidget);
       expect(find.text('boom'), findsOneWidget);
+    });
+  });
+
+  group('gauge', () {
+    testWidgets('shows the native gauge while streaming', (tester) async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.fuchsia;
+      try {
+        await tester.pumpView<GaugeCubit, GaugeState>(
+          const GaugeView(),
+          cubit: MockGaugeCubit(),
+          state: const GaugeState(status: GaugeStatus.streaming, value: 9.8),
+        );
+
+        expect(find.byKey(const Key('native_gauge')), findsOneWidget);
+      } finally {
+        debugDefaultTargetPlatformOverride = null;
+      }
+    });
+
+    testWidgets('shows the error', (tester) async {
+      await tester.pumpView<GaugeCubit, GaugeState>(
+        const GaugeView(),
+        cubit: MockGaugeCubit(),
+        state: const GaugeState(status: GaugeStatus.error, error: 'no sensor'),
+      );
+
+      expect(find.byKey(const Key('gauge_error')), findsOneWidget);
+      expect(find.text('no sensor'), findsOneWidget);
     });
   });
 }

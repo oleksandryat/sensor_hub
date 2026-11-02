@@ -30,6 +30,7 @@ class SensorhubNativePlugin : FlutterPlugin, ActivityAware, MethodCallHandler {
     PingHandlers.register(binding.binaryMessenger)
     DeviceInfoApi.setUp(binding.binaryMessenger, DeviceInfoHandler())
     SecureVaultApi.setUp(binding.binaryMessenger, SecureVaultHandler(binding.applicationContext))
+    binding.platformViewRegistry.registerViewFactory("sensorhub_native/gauge", GaugeViewFactory(binding.binaryMessenger))
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {

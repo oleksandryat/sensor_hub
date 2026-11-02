@@ -21,6 +21,7 @@ import '../../features/connection/cubit/connection_cubit.dart';
 import '../../features/dashboard/cubit/dashboard_cubit.dart';
 import '../../features/native_lab/device_info/cubit/device_info_cubit.dart';
 import '../../features/native_lab/export/cubit/export_cubit.dart';
+import '../../features/native_lab/gauge/cubit/gauge_cubit.dart';
 import '../../features/native_lab/phone_sensor/cubit/phone_sensor_cubit.dart';
 import '../../features/native_lab/system_events/cubit/system_events_cubit.dart';
 import '../router/app_router.dart';
@@ -84,6 +85,7 @@ void configureDependencies() {
       ),
     )
     ..registerFactory<SystemEventsCubit>(() => SystemEventsCubit(getIt()))
+    ..registerFactory<GaugeCubit>(() => GaugeCubit(getIt(), DateTime.now))
     ..registerFactory<DashboardCubit>(
       () => DashboardCubit(getIt(), getIt(), getIt(), _newCmdId),
     )

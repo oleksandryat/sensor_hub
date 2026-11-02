@@ -43,6 +43,13 @@ class NativeLabScreen extends StatelessWidget {
             subtitle: 'BasicMessageChannel events + ping latency',
             onTap: () => router.push(const SystemEventsRoute()),
           ),
+          DemoTile(
+            tileKey: const Key('demo_gauge'),
+            icon: Icons.speed,
+            title: 'Native gauge',
+            subtitle: 'Platform View + per-view channel',
+            onTap: () => router.push(const GaugeRoute()),
+          ),
         ],
       ),
     );

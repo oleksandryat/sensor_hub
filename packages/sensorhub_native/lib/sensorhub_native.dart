@@ -10,6 +10,7 @@ import 'src/native_exception.dart';
 export 'src/messages.g.dart'
     show DeviceInfoApi, DeviceInfoMessage, SecureVaultApi, VaultCredentials;
 export 'src/native_exception.dart' show NativeException;
+export 'src/native_gauge.dart';
 export 'src/secure_vault.dart';
 
 /// Static description of the device the app runs on.

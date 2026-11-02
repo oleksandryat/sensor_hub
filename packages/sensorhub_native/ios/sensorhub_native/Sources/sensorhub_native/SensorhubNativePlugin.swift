@@ -18,6 +18,7 @@ public class SensorhubNativePlugin: NSObject, FlutterPlugin {
     PingHandlers.register(messenger: registrar.messenger())
     DeviceInfoApiSetup.setUp(binaryMessenger: registrar.messenger(), api: DeviceInfoHandler())
     SecureVaultApiSetup.setUp(binaryMessenger: registrar.messenger(), api: SecureVaultHandler())
+    registrar.register(GaugeViewFactory(messenger: registrar.messenger()), withId: "sensorhub_native/gauge")
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
