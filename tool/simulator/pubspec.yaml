@@ -9,6 +9,7 @@ environment:
 # Add regular dependencies here.
 dependencies:
   args: ^2.7.0
+  intl: ^0.20.3
   mqtt5_client: ^5.0.0
   typed_data: ^1.4.0
 

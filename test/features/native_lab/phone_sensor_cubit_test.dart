@@ -173,6 +173,34 @@ void main() {
     ],
   );
 
+  blocTest<PhoneSensorCubit, PhoneSensorState>(
+    'anomalies within the event gap count as one event',
+    build: build,
+    act: (c) async {
+      c.start();
+      for (final v in [20.0, 1.0, 20.0, 20.0]) {
+        samples.add(sample(v));
+        await pumpEventQueue();
+        now = now.add(const Duration(milliseconds: 100));
+      }
+    },
+    verify: (c) => expect(c.state.anomalyCount, 1),
+  );
+
+  blocTest<PhoneSensorCubit, PhoneSensorState>(
+    'anomalies separated by a quiet gap count as two events',
+    build: build,
+    act: (c) async {
+      c.start();
+      samples.add(sample(20));
+      await pumpEventQueue();
+      now = now.add(PhoneSensorCubit.eventGap);
+      samples.add(sample(20));
+      await pumpEventQueue();
+    },
+    verify: (c) => expect(c.state.anomalyCount, 2),
+  );
+
   test('close cancels the native stream', () async {
     final cubit = build()..start();
     await cubit.close();

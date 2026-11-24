@@ -59,7 +59,7 @@ class PhoneSensorView extends StatelessWidget {
                 ),
                 _AxisTile(
                   tileKey: const Key('sensor_magnitude'),
-                  label: '|a|',
+                  label: '|a| magnitude',
                   value: sample.magnitude,
                 ),
               ],
@@ -76,7 +76,7 @@ class PhoneSensorView extends StatelessWidget {
                 subtitle: Text(
                   state.reading == null
                       ? 'Computed natively (C, FFI)'
-                      : 'z = ${state.reading!.zScore.toStringAsFixed(2)}, '
+                      : 'z-score ${state.reading!.zScore.toStringAsFixed(2)}, '
                             'mean ${state.reading!.mean.toStringAsFixed(2)} m/s²',
                 ),
               ),
