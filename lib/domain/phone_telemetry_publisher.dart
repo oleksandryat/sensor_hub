@@ -11,6 +11,11 @@ import 'throttle.dart';
 class PhoneTelemetryPublisher {
   static const unit = 'm/s²';
 
+  /// Phone device ids start with this; such devices accept no commands.
+  static const idPrefix = 'phone-';
+
+  static bool isPhone(String deviceId) => deviceId.startsWith(idPrefix);
+
   final String deviceId;
 
   final MqttGateway _gateway;

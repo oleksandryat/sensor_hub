@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../domain/device.dart';
+import '../../../domain/phone_telemetry_publisher.dart';
 import 'command_buttons.dart';
 import 'stale_badge.dart';
 
@@ -46,7 +47,9 @@ class DeviceTile extends StatelessWidget {
               ],
             ),
           ),
-          CommandButtons(deviceId: device.id),
+          // The phone only publishes; commands to it would always time out.
+          if (!PhoneTelemetryPublisher.isPhone(device.id))
+            CommandButtons(deviceId: device.id),
         ],
       ),
     );

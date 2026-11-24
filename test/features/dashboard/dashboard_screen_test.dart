@@ -109,6 +109,20 @@ void main() {
     verify(() => cubit.reboot('a')).called(1);
   });
 
+  testWidgets('phone device has no command buttons', (tester) async {
+    await pump(
+      tester,
+      DashboardState(
+        status: DashboardStatus.loaded,
+        devices: [device.copyWith(id: 'phone-1a2b')],
+        connection: ConnectionStatus.connected,
+      ),
+    );
+    expect(find.byKey(const Key('device_phone-1a2b')), findsOneWidget);
+    expect(find.byKey(const Key('reboot_phone-1a2b')), findsNothing);
+    expect(find.byKey(const Key('set_interval_phone-1a2b')), findsNothing);
+  });
+
   testWidgets('command buttons are disabled when offline', (tester) async {
     await pump(
       tester,

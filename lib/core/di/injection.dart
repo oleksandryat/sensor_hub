@@ -41,7 +41,9 @@ const _anomalyMinDeviation = 2.0;
 String _newClientId() =>
     'sensorhub-${Random().nextInt(1 << 32).toRadixString(16)}';
 
-String _newPhoneId() => 'phone-${Random().nextInt(1 << 16).toRadixString(16)}';
+String _newPhoneId() =>
+    '${PhoneTelemetryPublisher.idPrefix}'
+    '${Random().nextInt(1 << 16).toRadixString(16)}';
 
 String _newCmdId() => Random().nextInt(1 << 32).toRadixString(16);
 
