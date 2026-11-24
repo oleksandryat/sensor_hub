@@ -19,13 +19,14 @@ class DeviceTile extends StatelessWidget {
         children: [
           ListTile(
             key: Key('device_${device.id}'),
-            leading: Icon(
-              Icons.sensors,
-              color: device.online
-                  ? null
-                  : Theme.of(context).colorScheme.outline,
-            ),
-            title: Text(device.id),
+            leading: device.online
+                ? const Icon(Icons.sensors)
+                : Icon(
+                    Icons.sensors_off,
+                    key: const Key('device_offline_icon'),
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+            title: Text(device.online ? device.id : '${device.id} · offline'),
             subtitle: Text(
               lastSeen == null
                   ? 'No data yet'

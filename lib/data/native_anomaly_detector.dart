@@ -6,7 +6,11 @@ import '../domain/anomaly_detector.dart';
 class NativeAnomalyDetector implements AnomalyDetector {
   final StatsDetector _detector;
 
-  NativeAnomalyDetector(this._detector);
+  /// Deviations below this are noise, whatever their z-score: a resting
+  /// sensor has a tiny stdDev, so jitter alone produces huge z values.
+  final double minDeviation;
+
+  NativeAnomalyDetector(this._detector, {this.minDeviation = 0});
 
   @override
   AnomalyReading push(double value) {
@@ -15,7 +19,7 @@ class NativeAnomalyDetector implements AnomalyDetector {
       mean: r.mean,
       stdDev: r.stdDev,
       zScore: r.zScore,
-      isAnomaly: r.isAnomaly,
+      isAnomaly: r.isAnomaly && (value - r.mean).abs() >= minDeviation,
     );
   }
 

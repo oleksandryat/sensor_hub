@@ -6,7 +6,8 @@ import '../../../../core/di/injection.dart';
 import '../../../../domain/latency_stats.dart';
 import '../cubit/benchmark_cubit.dart';
 
-String _us(Duration d) => d.inMicroseconds.toString();
+// Duration has µs resolution, so sub-µs FFI calls read as 0.
+String _us(Duration d) => d == Duration.zero ? '<1' : '${d.inMicroseconds}';
 
 @RoutePage()
 class BenchmarkScreen extends StatelessWidget {
@@ -81,17 +82,21 @@ class _ResultTile extends StatelessWidget {
       BenchmarkMechanism.pigeon => ('Pigeon', 'Kotlin / Swift, typed'),
       BenchmarkMechanism.ffi => ('FFI', 'C, synchronous'),
     };
-    final factor = fastest == null || fastest == Duration.zero
-        ? null
-        : median.inMicroseconds / fastest!.inMicroseconds;
+    final fastest = this.fastest;
+    final String comparison;
+    if (fastest == null || median <= fastest) {
+      comparison = 'fastest';
+    } else if (fastest == Duration.zero) {
+      // The baseline is under 1 µs, so the real ratio is at least this.
+      comparison = '≥×${median.inMicroseconds} vs fastest';
+    } else {
+      final factor = median.inMicroseconds / fastest.inMicroseconds;
+      comparison = '×${factor.toStringAsFixed(1)} vs fastest';
+    }
     return ListTile(
       key: Key('benchmark_${result.mechanism.name}'),
       title: Text(title),
-      subtitle: Text(
-        factor == null || factor <= 1
-            ? '$detail · fastest'
-            : '$detail · ×${factor.toStringAsFixed(1)} vs fastest',
-      ),
+      subtitle: Text('$detail · $comparison'),
       trailing: Text('${_us(median)} / ${_us(p95)} µs'),
     );
   }

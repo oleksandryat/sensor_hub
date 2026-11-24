@@ -98,6 +98,22 @@ void main() {
     });
   });
 
+  test('late listener receives the current snapshot', () {
+    run((async, gateway, _, repo, _) {
+      gateway.emitMessage(
+        topic: 'p/devices/a/telemetry',
+        payload: telemetry(1),
+      );
+      async.flushMicrotasks();
+
+      final late = <List<Device>>[];
+      repo.devices.listen(late.add);
+      async.flushMicrotasks();
+
+      expect(late.single.single.id, 'a');
+    });
+  });
+
   test('status updates online flag', () {
     run((async, gateway, _, _, emitted) {
       gateway.emitMessage(

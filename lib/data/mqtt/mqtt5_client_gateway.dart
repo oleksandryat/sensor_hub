@@ -11,6 +11,9 @@ import '../../domain/mqtt_gateway_message.dart';
 import '../../domain/mqtt_gateway_state.dart';
 import '../../domain/mqtt_qos.dart';
 
+const _keepAlive = 30;
+const _pingTimeout = 10;
+
 MqttDisconnectReason mapDisconnectReason({
   required mqtt5.MqttDisconnectionOrigin origin,
   mqtt5.MqttDisconnectReasonCode? code,
@@ -80,7 +83,14 @@ class Mqtt5ClientGateway implements MqttGateway {
     );
     _client!
       ..autoReconnect = false
-      ..keepAlivePeriod = 30
+      ..keepAlivePeriod = _keepAlive
+      // Without it a silently dropped network is never detected.
+      ..disconnectOnNoResponsePeriod = _pingTimeout
+      // The default connect message advertises keep-alive 0 to the broker.
+      ..connectionMessage = mqtt5.MqttConnectMessage()
+          .withClientIdentifier(settings.clientId)
+          .keepAliveFor(_keepAlive)
+          .startClean()
       ..onConnected = () {
         _connectionStateController.add(MqttGatewayState.connected());
       }
@@ -90,7 +100,12 @@ class Mqtt5ClientGateway implements MqttGateway {
           MqttGatewayState.disconnected(
             reason: mapDisconnectReason(
               origin: status.disconnectionOrigin,
-              code: status.disconnectMessage.reasonCode,
+              // `disconnectMessage` is late: set only for broker disconnects.
+              code:
+                  status.disconnectionOrigin ==
+                      mqtt5.MqttDisconnectionOrigin.brokerSolicited
+                  ? status.disconnectMessage.reasonCode
+                  : null,
             ),
           ),
         );

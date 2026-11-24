@@ -35,6 +35,8 @@ const _phonePublishInterval = Duration(seconds: 1);
 // One second of samples at the accelerometer's 50 Hz.
 const _anomalyWindow = 50;
 const _anomalyZThreshold = 3.5;
+// ~0.2 g: ignores jitter and gentle handling, keeps real shakes.
+const _anomalyMinDeviation = 2.0;
 
 String _newClientId() =>
     'sensorhub-${Random().nextInt(1 << 32).toRadixString(16)}';
@@ -83,6 +85,7 @@ void configureDependencies() {
     ..registerFactory<AnomalyDetector>(
       () => NativeAnomalyDetector(
         StatsDetector(window: _anomalyWindow, zThreshold: _anomalyZThreshold),
+        minDeviation: _anomalyMinDeviation,
       ),
     )
     ..registerFactory<SystemEventsCubit>(() => SystemEventsCubit(getIt()))

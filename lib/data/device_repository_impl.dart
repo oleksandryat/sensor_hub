@@ -35,7 +35,16 @@ class DeviceRepositoryImpl implements DeviceRepository {
   StreamSubscription? _messagesSubscription;
 
   @override
-  Stream<List<Device>> get devices => _controller.stream;
+  Stream<List<Device>> get devices => Stream.multi((listener) {
+    // Replay the snapshot so late listeners don't wait for the next message.
+    if (_devices.isNotEmpty) listener.add(_snapshot());
+    final sub = _controller.stream.listen(
+      listener.add,
+      onError: listener.addError,
+      onDone: listener.close,
+    );
+    listener.onCancel = sub.cancel;
+  });
 
   @override
   void start() {
@@ -105,10 +114,11 @@ class DeviceRepositoryImpl implements DeviceRepository {
   }
 
   void _emit() {
-    _controller.add(
-      _devices.values.toList()..sort((a, b) => a.id.compareTo(b.id)),
-    );
+    _controller.add(_snapshot());
   }
+
+  List<Device> _snapshot() =>
+      _devices.values.toList()..sort((a, b) => a.id.compareTo(b.id));
 
   @override
   void dispose() {

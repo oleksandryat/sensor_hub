@@ -71,6 +71,7 @@ class Mqtt3ClientGateway implements MqttGateway {
     client
       ..autoReconnect = false
       ..keepAlivePeriod = 30
+      ..disconnectOnNoResponsePeriod = 10
       ..logging(on: false)
       ..setProtocolV311()
       ..connectionMessage = mqtt3.MqttConnectMessage()

@@ -80,6 +80,15 @@ class ConnectionView extends StatelessWidget {
                         ),
                     onDisconnect: cubit.disconnect,
                   ),
+                  if (state.status == ConnectionStatus.connected) ...[
+                    const SizedBox(height: 12),
+                    FilledButton.tonal(
+                      key: const Key('open_dashboard_button'),
+                      onPressed: () =>
+                          context.router.push(const DashboardRoute()),
+                      child: const Text('Open dashboard'),
+                    ),
+                  ],
                 ],
               ),
             ),

@@ -361,6 +361,27 @@ void main() {
       expect(find.text('C, synchronous · fastest'), findsOneWidget);
     });
 
+    testWidgets('a sub-microsecond baseline is a lower bound', (tester) async {
+      BenchmarkResult result(BenchmarkMechanism m, int us) => BenchmarkResult(
+        mechanism: m,
+        stats: LatencyStats.of([Duration(microseconds: us)]),
+      );
+      await pump(
+        tester,
+        BenchmarkState(
+          status: BenchmarkStatus.done,
+          results: [
+            result(BenchmarkMechanism.methodChannel, 178),
+            result(BenchmarkMechanism.ffi, 0),
+          ],
+        ),
+      );
+
+      expect(find.text('<1 / <1 µs'), findsOneWidget);
+      expect(find.text('C, synchronous · fastest'), findsOneWidget);
+      expect(find.text('Kotlin / Swift · ≥×178 vs fastest'), findsOneWidget);
+    });
+
     testWidgets('compares slower mechanisms with the fastest', (tester) async {
       BenchmarkResult result(BenchmarkMechanism m, int us) => BenchmarkResult(
         mechanism: m,

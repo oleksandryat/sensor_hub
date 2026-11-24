@@ -29,9 +29,11 @@ void main() {
 
   tearDownAll(() => buildDir.deleteSync(recursive: true));
 
-  NativeAnomalyDetector build() => NativeAnomalyDetector(
-    StatsDetector(window: 10, zThreshold: 3, library: library),
-  );
+  NativeAnomalyDetector build({double minDeviation = 0}) =>
+      NativeAnomalyDetector(
+        StatsDetector(window: 10, zThreshold: 3, library: library),
+        minDeviation: minDeviation,
+      );
 
   test('maps the native reading to the domain model', () {
     final detector = build();
@@ -45,6 +47,27 @@ void main() {
     expect(reading.zScore, greaterThan(3));
     expect(reading.mean, closeTo(9.8, 0.1));
     expect(reading.stdDev, greaterThan(0));
+  });
+
+  test('jitter below minDeviation is not an anomaly despite high z', () {
+    final detector = build(minDeviation: 1);
+    for (final v in [9.80, 9.81, 9.80, 9.81, 9.80, 9.81]) {
+      detector.push(v);
+    }
+
+    final reading = detector.push(9.9);
+
+    expect(reading.zScore, greaterThan(3));
+    expect(reading.isAnomaly, isFalse);
+  });
+
+  test('a real spike above minDeviation is still an anomaly', () {
+    final detector = build(minDeviation: 1);
+    for (final v in [9.80, 9.81, 9.80, 9.81, 9.80, 9.81]) {
+      detector.push(v);
+    }
+
+    expect(detector.push(15).isAnomaly, isTrue);
   });
 
   test('reset clears the history', () {
